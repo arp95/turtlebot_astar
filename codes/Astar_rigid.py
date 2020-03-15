@@ -40,7 +40,7 @@ clearance = float(input("Enter the clearance of the rigid robot : "))
 # take start and goal node as input
 start = (startRow, startCol, startOrientation)
 goal = (goalRow, goalCol)
-astar = AStar(start, goal, clearance, radius)
+astar = AStar(start, goal, clearance, radius, 1)
 
 if(astar.IsValid(start[0], start[1])):
     if(astar.IsValid(goal[0], goal[1])):
