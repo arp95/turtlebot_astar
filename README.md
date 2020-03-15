@@ -12,7 +12,7 @@ Arpit Aggarwal Shantam Bajpai
 To run the code for finding the path, follow the following commands:
 
 ```
-cd Code
+cd codes
 python Astar_rigid.py
 ```
 
