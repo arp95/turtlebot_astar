@@ -1,7 +1,7 @@
 """
  *  MIT License
  *
- *  Copyright (c) 2019 Arpit Aggarwal
+ *  Copyright (c) 2019 Arpit Aggarwal Shantam Bajpai
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a
  *  copy of this software and associated documentation files (the "Software"),
@@ -23,10 +23,12 @@
  *  DEALINGS IN THE SOFTWARE.
 """
 
+
 # header files
 import numpy as np
-import cv2
+import matplotlib.pyplot as plt
 from heapq import heappush, heappop
+
 
 # class for AStar
 class AStar(object):
@@ -185,36 +187,8 @@ class AStar(object):
     
     # animate path
     def animate(self, explored_states, backtrack_states, path):
-        fourcc = cv2.VideoWriter_fourcc(*'XVID')
-        out = cv2.VideoWriter(str(path), fourcc, 20.0, (self.numCols, self.numRows))
-        image = np.zeros((self.numRows, self.numCols, 3), dtype=np.uint8)
-        count = 0
-        for state in explored_states:
-            image[self.numRows - state[0], state[1] - 1] = (255, 255, 0)
-            if(count%80 == 0):
-                out.write(image)
-            count = count + 1
-
-        count = 0
-        for row in range(1, self.numRows + 1):
-            for col in range(1, self.numCols + 1):
-                if(image[self.numRows - row, col - 1, 0] == 0 and image[self.numRows - row, col - 1, 1] == 0 and image[self.numRows - row, col - 1, 2] == 0):
-                    if(self.IsValid(row, col) and self.IsObstacle(row, col) == False):
-                        image[self.numRows - row, col - 1] = (154, 250, 0)
-                        if(count%80 == 0):
-                            out.write(image)
-                        count = count + 1
-            
-        if(len(backtrack_states) > 0):
-            for state in backtrack_states:
-                image[self.numRows - state[0], state[1] - 1] = (0, 0, 255)
-                out.write(image)
-                cv2.imshow('result', image)
-                cv2.waitKey(5)
-                
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
-        out.release()
+        startX = np.array((backtrack_states[0][0]))
+        
 
     # euc heuristic
     def euc_heuristic(self, row, col):
@@ -231,6 +205,7 @@ class AStar(object):
         self.costToGo[self.start] = 0
         backtrackNode = None
         flag = 0
+        steps = 0
         
         # run a-star
         while(len(queue) > 0):
@@ -238,13 +213,18 @@ class AStar(object):
             _, current_node = heappop(queue)
             self.visited[(2 * int(round(current_node[0])), 2 * int(round(current_node[1])), current_node[2])] = True
             explored_states.append(current_node)
+            steps = steps + 1
             
             # if goal node then break
-            if(np.abs(current_node[0] - self.goal[0]) < 1.5 and np.abs(current_node[1] - self.goal[1]) < 1.5):
+            if((np.abs(current_node[0] - self.goal[0]) * np.abs(current_node[0] - self.goal[0]) + np.abs(current_node[1] - self.goal[1]) * np.abs(current_node[1] - self.goal[1])) < 2.25):
                 flag = 1
                 backtrackNode = current_node
                 break
                
+            # break if steps greater than 4000000
+            if(steps > 4000000):
+                break
+
             # traverse the edges
             if(self.ActionMoveOne(current_node[0], current_node[1], current_node[2])):
                 newRow = current_node[0] + np.cos(current_node[2] * (3.14159 / 180))
@@ -338,7 +318,7 @@ class AStar(object):
                     
         # return if no optimal path
         if(flag == 0):
-            return (explored_states, [], self.distance[backtrackNode])
+            return (explored_states, [], float('inf'))
         
         # backtrack path
         backtrack_states = []

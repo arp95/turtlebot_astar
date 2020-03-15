@@ -23,17 +23,19 @@
  *  DEALINGS IN THE SOFTWARE.
 """
 
+
 # header files
 from utils import *
 import sys
 
-startRow = int(input("Enter the row coordinate for start node (between 1 and 200) : "))
-startCol = int(input("Enter the column coordinate for start node (between 1 and 300) : "))
-startOrientation = int(input("Enter the orientation for start node : "))
-goalRow = int(input("Enter the row coordinate for goal node (between 1 and 200) : "))
-goalCol = int(input("Enter the column coordinate for goal node (between 1 and 300) : "))
-radius = int(input("Enter the radius for the robot : "))
-clearance = int(input("Enter the clearance for the robot : "))
+
+startCol = float(input("Enter the x-coordinate for start node : "))
+startRow = float(input("Enter the y-coordinate for start node : "))
+startOrientation = float(input("Enter the orientation for start node : "))
+goalCol = float(input("Enter the x-coordinate for goal node : "))
+goalRow = float(input("Enter the y-coordinate for goal node : "))
+radius = float(input("Enter the radius of the rigid robot : "))
+clearance = float(input("Enter the clearance of the rigid robot : "))
 
 # take start and goal node as input
 start = (startRow, startCol, startOrientation)
@@ -45,6 +47,7 @@ if(astar.IsValid(start[0], start[1])):
         if(astar.IsObstacle(start[0],start[1]) == False):
             if(astar.IsObstacle(goal[0], goal[1]) == False):
                 (explored_states, backtrack_states, distance_from_start_to_goal) = astar.search()
+                print(backtrack_states)
                 #astar.animate(explored_states, backtrack_states, "./astar_rigid.avi")
                 # print optimal path found or not
                 if(distance_from_start_to_goal == float('inf')):
