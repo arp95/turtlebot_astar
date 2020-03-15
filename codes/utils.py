@@ -52,12 +52,10 @@ class AStar(object):
                 for theta in range(0, 360, 30):            
                     self.visited[(row, col, theta)] = False
     
-
     # move is valid 
     def IsValid(self, currRow, currCol):
         return (currRow >= (1 + self.radius + self.clearance) and currRow <= (self.numRows - self.radius - self.clearance) and currCol >= (1 + self.radius + self.clearance) and currCol <= (self.numCols - self.radius - self.clearance))
 
-    
     # checks for an obstacle
     def IsObstacle(self, row, col):
         # constants
@@ -188,9 +186,45 @@ class AStar(object):
     
     # animate path
     def animate(self, explored_states, backtrack_states, path):
-        startX = np.array((backtrack_states[0][0]))
-        
+        startX = []
+        startY = []
+        endX = []
+        endY = []
+        explored_startX = []
+        explored_startY = []
+        explored_endX = []
+        explored_endY = []
+        fig, ax = plt.subplots()
+        plt.grid()
+        ax.set_aspect('equal')
+        plt.xlim(0, 300)
+        plt.ylim(0, 200)
+        count = 0
 
+        for index in range(1, len(explored_states)):
+            explored_startX.append(explored_states[index-1][1])
+            explored_startY.append(explored_states[index-1][0])
+            explored_endX.append(explored_states[index][1])
+            explored_endY.append(explored_states[index][0])    
+            #if(count % 1000):
+            #    plt.savefig("sample" + str(count) + ".png")
+            count = count + 1
+    
+        count = 0
+        for index in range(1, len(backtrack_states)):
+            startX.append(backtrack_states[index-1][1])
+            startY.append(backtrack_states[index-1][0])
+            endX.append(backtrack_states[index][1])
+            endY.append(backtrack_states[index][0])    
+            #if(count % 5 == 0):
+            #    plt.savefig("sample" + str(count) + ".png")
+            count = count + 1
+
+        plt.quiver(np.array((explored_startX)), np.array((explored_startY)), np.array((explored_endX)), np.array((explored_endY)), units='xy', scale=15, color= 'g', headwidth = 0, headlength=0)
+        plt.quiver(np.array((startX)), np.array((startY)), np.array((endX)), np.array((endY)), units='xy', scale=15, color= 'r', headwidth = 0, headlength=0)
+        plt.show()
+        plt.close()
+        
     # euc heuristic
     def euc_heuristic(self, row, col):
         return np.sqrt(((self.goal[0] - row)**2) + ((self.goal[1] - col)**2))
