@@ -33,7 +33,7 @@ from heapq import heappush, heappop
 # class for AStar
 class AStar(object):
     # init function
-    def __init__(self, start, goal, clearance, radius, step_size):
+    def __init__(self, start, goal, clearance, radius, stepSize):
         self.start = start
         self.goal = goal
         self.numRows = 200
@@ -45,7 +45,7 @@ class AStar(object):
         self.costToCome = {}
         self.costToGo = {}
         self.visited = {}
-        self.step_size = step_size
+        self.step_size = stepSize
         
         for row in range(1, 2 * self.numRows + 1):
             for col in range(1, 2 * self.numCols + 1):
@@ -136,51 +136,51 @@ class AStar(object):
     
     # action move one
     def ActionMoveOne(self, currRow, currCol, theta):
-        newRow = currRow + np.sin(theta * (np.pi / 180))
-        newCol = currCol + np.cos(theta * (np.pi / 180))
+        newRow = currRow + (np.sin(theta * (np.pi / 180)) / 0.5)
+        newCol = currCol + (np.cos(theta * (np.pi / 180)) / 0.5)
         newTheta = (theta + 0) % 360
 
-        if(self.IsValid(newRow, newCol) and self.IsObstacle(newRow, newCol) == False and self.visited[(2 * int(round(newRow)), 2 * int(round(newCol)), newTheta)] == False):
+        if(self.IsValid(newRow, newCol) and self.IsObstacle(newRow, newCol) == False and self.visited[(int(round(2.0 * newRow)), int(round(2.0 * newCol)), newTheta)] == False):
             return True
         return False
 
     # action move two
     def ActionMoveTwo(self, currRow, currCol, theta):
-        newRow = currRow + np.sin((theta + 30) * (np.pi / 180))
-        newCol = currCol + np.cos((theta + 30) * (np.pi / 180))
+        newRow = currRow + (np.sin((theta + 30) * (np.pi / 180)) / 0.5)
+        newCol = currCol + (np.cos((theta + 30) * (np.pi / 180)) / 0.5)
         newTheta = (theta + 30) % 360
  
-        if(self.IsValid(newRow, newCol) and self.IsObstacle(newRow, newCol) == False and self.visited[(2 * int(round(newRow)), 2 * int(round(newCol)), newTheta)] == False):
+        if(self.IsValid(newRow, newCol) and self.IsObstacle(newRow, newCol) == False and self.visited[(int(round(2.0 * newRow)), int(round(2.0 * newCol)), newTheta)] == False):
             return True
         return False
 
     # action move three
     def ActionMoveThree(self, currRow, currCol, theta):
-        newRow = currRow + np.sin((theta + 60) * (np.pi / 180))
-        newCol = currCol + np.cos((theta + 60) * (np.pi / 180))
+        newRow = currRow + (np.sin((theta + 60) * (np.pi / 180)) / 0.5)
+        newCol = currCol + (np.cos((theta + 60) * (np.pi / 180)) / 0.5)
         newTheta = (theta + 60) % 360
 
-        if(self.IsValid(newRow, newCol) and self.IsObstacle(newRow, newCol) == False and self.visited[(2 * int(round(newRow)), 2 * int(round(newCol)), newTheta)] == False):
+        if(self.IsValid(newRow, newCol) and self.IsObstacle(newRow, newCol) == False and self.visited[(int(round(2.0 * newRow)), int(round(2.0 * newCol)), newTheta)] == False):
             return True
         return False
 
     # action move four
     def ActionMoveFour(self, currRow, currCol, theta):
-        newRow = currRow + np.sin((theta - 30) * (np.pi / 180))
-        newCol = currCol + np.cos((theta - 30) * (np.pi / 180))
+        newRow = currRow + (np.sin((theta - 30) * (np.pi / 180)) / 0.5)
+        newCol = currCol + (np.cos((theta - 30) * (np.pi / 180)) / 0.5)
         newTheta = (theta - 30) % 360
 
-        if(self.IsValid(newRow, newCol) and self.IsObstacle(newRow, newCol) == False and self.visited[(2 * int(round(newRow)), 2 * int(round(newCol)), newTheta)] == False):
+        if(self.IsValid(newRow, newCol) and self.IsObstacle(newRow, newCol) == False and self.visited[(int(round(2.0 * newRow)), int(round(2.0 * newCol)), newTheta)] == False):
             return True
         return False
 
     # action move five
     def ActionMoveFive(self, currRow, currCol, theta):
-        newRow = currRow + np.sin((theta - 60) * (np.pi / 180))
-        newCol = currCol + np.cos((theta - 60) * (np.pi / 180))
+        newRow = currRow + (np.sin((theta - 60) * (np.pi / 180)) / 0.5)
+        newCol = currCol + (np.cos((theta - 60) * (np.pi / 180)) / 0.5)
         newTheta = (theta - 60) % 360
 
-        if(self.IsValid(newRow, newCol) and self.IsObstacle(newRow, newCol) == False and self.visited[(2 * int(round(newRow)), 2 * int(round(newCol)), newTheta)] == False):
+        if(self.IsValid(newRow, newCol) and self.IsObstacle(newRow, newCol) == False and self.visited[(int(round(2.0 * newRow)), int(round(2.0 * newCol)), newTheta)] == False):
             return True
         return False
     
@@ -206,22 +206,25 @@ class AStar(object):
             explored_startY.append(explored_states[index-1][0])
             explored_endX.append(explored_states[index][1])
             explored_endY.append(explored_states[index][0])    
-            #if(count % 1000):
-            #    plt.savefig("sample" + str(count) + ".png")
+            #if(count % 100 == 0):
+                #plt.quiver(np.array((explored_startX)), np.array((explored_startY)), np.array((explored_endX)), np.array((explored_endY)), units = 'xy', scale = 10, color = 'g', headwidth = 0.5, headlength = 0)
+                #plt.savefig("output/sample" + str(count) + ".png")
             count = count + 1
     
-        count = 0
-        for index in range(1, len(backtrack_states)):
-            startX.append(backtrack_states[index-1][1])
-            startY.append(backtrack_states[index-1][0])
-            endX.append(backtrack_states[index][1])
-            endY.append(backtrack_states[index][0])    
-            #if(count % 5 == 0):
-            #    plt.savefig("sample" + str(count) + ".png")
-            count = count + 1
+        if(len(backtrack_states) > 0):
+            for index in range(1, len(backtrack_states)):
+                startX.append(backtrack_states[index-1][1])
+                startY.append(backtrack_states[index-1][0])
+                endX.append(backtrack_states[index][1])
+                endY.append(backtrack_states[index][0])    
+                #if(count % 2 == 0):
+                    #plt.quiver(np.array((startX)), np.array((startY)), np.array((endX)), np.array((endY)), units = 'xy', scale = 10, color = 'r', headwidth = 0.5, headlength = 0)
+                    #plt.savefig("output/sample" + str(count) + ".png")
+                count = count + 1
 
-        plt.quiver(np.array((explored_startX)), np.array((explored_startY)), np.array((explored_endX)), np.array((explored_endY)), units='xy', scale=15, color= 'g', headwidth = 0, headlength=0)
-        plt.quiver(np.array((startX)), np.array((startY)), np.array((endX)), np.array((endY)), units='xy', scale=15, color= 'r', headwidth = 0, headlength=0)
+        plt.quiver(np.array((explored_startX)), np.array((explored_startY)), np.array((explored_endX)), np.array((explored_endY)), units = 'xy', scale = 10, color = 'g', headwidth = 0.5, headlength = 0)
+        if(len(backtrack_states) > 0):
+            plt.quiver(np.array((startX)), np.array((startY)), np.array((endX)), np.array((endY)), units = 'xy', scale = 10, color = 'r', headwidth = 0.5, headlength = 0)
         plt.show()
         plt.close()
         
@@ -246,25 +249,25 @@ class AStar(object):
         while(len(queue) > 0):
             # get current node
             _, current_node = heappop(queue)
-            self.visited[(2 * int(round(current_node[0])), 2 * int(round(current_node[1])), current_node[2])] = True
+            self.visited[(int(round(2.0 * current_node[0])), int(round(2.0 * current_node[1])), current_node[2])] = True
             explored_states.append(current_node)
             steps = steps + 1
             
             # if goal node then break
             # Using the distance formula
-            if(np.square(np.abs(current_node[0] - self.goal[0])) + np.square(np.abs(current_node[1] - self.goal[1]))< 2.25):
+            if(np.square(np.abs(current_node[0] - self.goal[0])) + np.square(np.abs(current_node[1] - self.goal[1])) < 2.25):
                 flag = 1
                 backtrackNode = current_node
                 break
                
             # break if steps greater than 10000000
-            if(steps > 10000000):
+            if(steps > 50000000):
                 break
 
             # traverse the edges
             if(self.ActionMoveOne(current_node[0], current_node[1], current_node[2])):
-                newRow = current_node[0] + np.sin(current_node[2] * (np.pi / 180))
-                newCol = current_node[1] + np.cos(current_node[2] * (np.pi / 180))
+                newRow = current_node[0] + (np.sin(current_node[2] * (np.pi / 180)) / 0.5)
+                newCol = current_node[1] + (np.cos(current_node[2] * (np.pi / 180)) / 0.5)
                 newTheta = (current_node[2] + 0) % 360
                 new_cost_to_come = self.costToCome[current_node] + 1
                 new_cost_to_go = self.euc_heuristic(newRow, newCol)
@@ -281,8 +284,8 @@ class AStar(object):
                     heappush(queue, (new_distance, (newRow, newCol, newTheta)))
             
             if(self.ActionMoveTwo(current_node[0], current_node[1], current_node[2])):
-                newRow = current_node[0] + np.sin((current_node[2] + 30) * (np.pi / 180))
-                newCol = current_node[1] + np.cos((current_node[2] + 30) * (np.pi / 180))
+                newRow = current_node[0] + (np.sin((current_node[2] + 30) * (np.pi / 180)) / 0.5)
+                newCol = current_node[1] + (np.cos((current_node[2] + 30) * (np.pi / 180)) / 0.5)
                 newTheta = (current_node[2] + 30) % 360
                 new_cost_to_come = self.costToCome[current_node] + 1.3
                 new_cost_to_go = self.euc_heuristic(newRow, newCol)
@@ -299,8 +302,8 @@ class AStar(object):
                     heappush(queue, (new_distance, (newRow, newCol, newTheta)))
                     
             if(self.ActionMoveThree(current_node[0], current_node[1], current_node[2])):
-                newRow = current_node[0] + np.sin((current_node[2] + 60) * (np.pi / 180))
-                newCol = current_node[1] + np.cos((current_node[2] + 60) * (np.pi / 180))
+                newRow = current_node[0] + (np.sin((current_node[2] + 60) * (np.pi / 180)) / 0.5)
+                newCol = current_node[1] + (np.cos((current_node[2] + 60) * (np.pi / 180)) / 0.5)
                 newTheta = (current_node[2] + 60) % 360
                 new_cost_to_come = self.costToCome[current_node] + 1.6
                 new_cost_to_go = self.euc_heuristic(newRow, newCol)
@@ -317,8 +320,8 @@ class AStar(object):
                     heappush(queue, (new_distance, (newRow, newCol, newTheta)))
                     
             if(self.ActionMoveFour(current_node[0], current_node[1], current_node[2])):
-                newRow = current_node[0] + np.sin((current_node[2] - 30) * (np.pi / 180))
-                newCol = current_node[1] + np.cos((current_node[2] - 30) * (np.pi / 180))
+                newRow = current_node[0] + (np.sin((current_node[2] - 30) * (np.pi / 180)) / 0.5)
+                newCol = current_node[1] + (np.cos((current_node[2] - 30) * (np.pi / 180)) / 0.5)
                 newTheta = (current_node[2] - 30) % 360
                 new_cost_to_come = self.costToCome[current_node] + 1.3
                 new_cost_to_go = self.euc_heuristic(newRow, newCol)
@@ -335,8 +338,8 @@ class AStar(object):
                     heappush(queue, (new_distance, (newRow, newCol, newTheta)))
                     
             if(self.ActionMoveFive(current_node[0], current_node[1], current_node[2])):
-                newRow = current_node[0] + np.sin((current_node[2] - 60) * (np.pi / 180))
-                newCol = current_node[1] + np.cos((current_node[2] - 60) * (np.pi / 180))
+                newRow = current_node[0] + (np.sin((current_node[2] - 60) * (np.pi / 180)) / 0.5)
+                newCol = current_node[1] + (np.cos((current_node[2] - 60) * (np.pi / 180)) / 0.5)
                 newTheta = (current_node[2] - 60) % 360
                 new_cost_to_come = self.costToCome[current_node] + 1.6
                 new_cost_to_go = self.euc_heuristic(newRow, newCol)
