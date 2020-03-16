@@ -184,6 +184,18 @@ class AStar(object):
             return True
         return False
     
+    # generate video
+    def generate_video(path):
+        files = glob.glob(str(path) + "/*")
+        files = np.sort(files)
+        fourcc = cv2.VideoWriter_fourcc(*'XVID')
+        out = cv2.VideoWriter("simulation.avi", fourcc, 20.0, (300, 200))
+        for file in files:
+            image = cv2.imread(file)
+            image = cv2.resize(image, (300, 200))
+            out.write(image)
+        out.release()
+
     # animate path
     def animate(self, explored_states, backtrack_states, path):
         startX = []
@@ -206,9 +218,9 @@ class AStar(object):
             explored_startY.append(explored_states[index-1][0])
             explored_endX.append(explored_states[index][1])
             explored_endY.append(explored_states[index][0])    
-            #if(count % 100 == 0):
-                #plt.quiver(np.array((explored_startX)), np.array((explored_startY)), np.array((explored_endX)), np.array((explored_endY)), units = 'xy', scale = 10, color = 'g', headwidth = 0.5, headlength = 0)
-                #plt.savefig("output/sample" + str(count) + ".png")
+            #if(count % 500 == 0):
+            #    plt.quiver(np.array((explored_startX)), np.array((explored_startY)), np.array((explored_endX)), np.array((explored_endY)), units = 'xy', scale = 10, color = 'g', headwidth = 0.5, headlength = 0)
+            #    plt.savefig("output1/sample" + str(count) + ".png")
             count = count + 1
     
         if(len(backtrack_states) > 0):
@@ -217,9 +229,9 @@ class AStar(object):
                 startY.append(backtrack_states[index-1][0])
                 endX.append(backtrack_states[index][1])
                 endY.append(backtrack_states[index][0])    
-                #if(count % 2 == 0):
-                    #plt.quiver(np.array((startX)), np.array((startY)), np.array((endX)), np.array((endY)), units = 'xy', scale = 10, color = 'r', headwidth = 0.5, headlength = 0)
-                    #plt.savefig("output/sample" + str(count) + ".png")
+                #if(count % 1 == 0):
+                #    plt.quiver(np.array((startX)), np.array((startY)), np.array((endX)), np.array((endY)), units = 'xy', scale = 10, color = 'r', headwidth = 0.5, headlength = 0)
+                #    plt.savefig("output1/sample" + str(count) + ".png")
                 count = count + 1
 
         plt.quiver(np.array((explored_startX)), np.array((explored_startY)), np.array((explored_endX)), np.array((explored_endY)), units = 'xy', scale = 10, color = 'g', headwidth = 0.5, headlength = 0)
