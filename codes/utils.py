@@ -141,8 +141,8 @@ class AStar(object):
         newTheta = (theta + 0) % 360
 
         if(self.IsValid(newRow, newCol) and self.IsObstacle(newRow, newCol) == False and self.visited[(int(round(2.0 * newRow)), int(round(2.0 * newCol)), newTheta)] == False):
-            return True
-        return False
+            return (True, newRow, newCol, newTheta)
+        return (False, newRow, newCol, newTheta)
 
     # action move two
     def ActionMoveTwo(self, currRow, currCol, theta):
@@ -151,8 +151,8 @@ class AStar(object):
         newTheta = (theta + 30) % 360
  
         if(self.IsValid(newRow, newCol) and self.IsObstacle(newRow, newCol) == False and self.visited[(int(round(2.0 * newRow)), int(round(2.0 * newCol)), newTheta)] == False):
-            return True
-        return False
+            return (True, newRow, newCol, newTheta)
+        return (False, newRow, newCol, newTheta)
 
     # action move three
     def ActionMoveThree(self, currRow, currCol, theta):
@@ -161,8 +161,8 @@ class AStar(object):
         newTheta = (theta + 60) % 360
 
         if(self.IsValid(newRow, newCol) and self.IsObstacle(newRow, newCol) == False and self.visited[(int(round(2.0 * newRow)), int(round(2.0 * newCol)), newTheta)] == False):
-            return True
-        return False
+            return (True, newRow, newCol, newTheta)
+        return (False, newRow, newCol, newTheta)
 
     # action move four
     def ActionMoveFour(self, currRow, currCol, theta):
@@ -171,8 +171,8 @@ class AStar(object):
         newTheta = (theta - 30) % 360
 
         if(self.IsValid(newRow, newCol) and self.IsObstacle(newRow, newCol) == False and self.visited[(int(round(2.0 * newRow)), int(round(2.0 * newCol)), newTheta)] == False):
-            return True
-        return False
+            return (True, newRow, newCol, newTheta)
+        return (False, newRow, newCol, newTheta)
 
     # action move five
     def ActionMoveFive(self, currRow, currCol, theta):
@@ -181,9 +181,25 @@ class AStar(object):
         newTheta = (theta - 60) % 360
 
         if(self.IsValid(newRow, newCol) and self.IsObstacle(newRow, newCol) == False and self.visited[(int(round(2.0 * newRow)), int(round(2.0 * newCol)), newTheta)] == False):
+            return (True, newRow, newCol, newTheta)
+        return (False, newRow, newCol, newTheta)
+    
+    # update action
+    def UpdateAction(self, current_node, weight, newRow, newCol, newTheta):
+        new_cost_to_come = self.costToCome[current_node] + weight
+        new_cost_to_go = self.euc_heuristic(newRow, newCol)
+        new_distance = new_cost_to_come + new_cost_to_go
+
+        if(self.distance.get((newRow, newCol, newTheta)) == None):
+            self.distance[(newRow, newCol, newTheta)] = float('inf')                    
+        if(self.distance[(newRow, newCol, newTheta)] > new_distance):
+            self.distance[(newRow, newCol, newTheta)] = new_distance
+            self.costToCome[(newRow, newCol, newTheta)] = new_cost_to_come
+            self.costToGo[(newRow, newCol, newTheta)] = new_cost_to_go
+            self.path[(newRow, newCol, newTheta)] = current_node
             return True
         return False
-    
+
     # generate video
     def generate_video(path):
         files = glob.glob(str(path) + "/*")
@@ -234,25 +250,25 @@ class AStar(object):
                 #    plt.savefig("output1/sample" + str(count) + ".png")
                 count = count + 1
 
-        plt.quiver(np.array((explored_startX)), np.array((explored_startY)), np.array((explored_endX)), np.array((explored_endY)), units = 'xy', scale = 10, color = 'g', headwidth = 0.5, headlength = 0)
+        plt.quiver(np.array((explored_startX)), np.array((explored_startY)), np.array((explored_endX)), np.array((explored_endY)), units = 'xy', scale = 5, color = 'g', headwidth = 0.5, headlength = 0)
         if(len(backtrack_states) > 0):
-            plt.quiver(np.array((startX)), np.array((startY)), np.array((endX)), np.array((endY)), units = 'xy', scale = 10, color = 'r', headwidth = 0.5, headlength = 0)
+            plt.quiver(np.array((startX)), np.array((startY)), np.array((endX)), np.array((endY)), units = 'xy', scale = 5, color = 'r', headwidth = 0.5, headlength = 0)
         plt.show()
         plt.close()
         
     # euc heuristic
     def euc_heuristic(self, row, col):
-        return np.sqrt(((self.goal[0] - row)**2) + ((self.goal[1] - col)**2))
+        return np.sqrt(((self.goal[0] - row)**2) + ((self.goal[1] - col)**2)) / 0.5
     
     # a-star algo
     def search(self):
-        # mark source node and create a queu
+        # mark source node and create a queue
         explored_states = []
         queue = []
-        heappush(queue, (0, self.start))
         self.distance[self.start] = 0
         self.costToCome[self.start] = 0
-        self.costToGo[self.start] = 0
+        self.costToGo[self.start] = self.euc_heuristic(self.start[0], self.start[1])
+        heappush(queue, (self.costToGo[self.start], self.start))
         backtrackNode = None
         flag = 0
         steps = 0
@@ -265,107 +281,51 @@ class AStar(object):
             explored_states.append(current_node)
             steps = steps + 1
             
-            # if goal node then break
-            # Using the distance formula
-            if(np.square(np.abs(current_node[0] - self.goal[0])) + np.square(np.abs(current_node[1] - self.goal[1])) < 2.25):
+            # if goal node then break, using the distance formula
+            if(np.square(np.abs(current_node[0] - self.goal[0])) + np.square(np.abs(current_node[1] - self.goal[1])) < 0.5625):
                 flag = 1
                 backtrackNode = current_node
                 break
                
-            # break if steps greater than 10000000
-            if(steps > 50000000):
+            # break if steps greater than 1000000
+            if(steps > 1000000):
                 break
 
             # traverse the edges
-            if(self.ActionMoveOne(current_node[0], current_node[1], current_node[2])):
-                newRow = current_node[0] + (np.sin(current_node[2] * (np.pi / 180)) / 0.5)
-                newCol = current_node[1] + (np.cos(current_node[2] * (np.pi / 180)) / 0.5)
-                newTheta = (current_node[2] + 0) % 360
-                new_cost_to_come = self.costToCome[current_node] + 1
-                new_cost_to_go = self.euc_heuristic(newRow, newCol)
-                new_distance = new_cost_to_come + new_cost_to_go
-
-                if(self.distance.get((newRow, newCol, newTheta)) == None):
-                    self.distance[(newRow, newCol, newTheta)] = float('inf')                    
-
-                if(self.distance[(newRow, newCol, newTheta)] > new_distance):
-                    self.distance[(newRow, newCol, newTheta)] = new_distance
-                    self.costToCome[(newRow, newCol, newTheta)] = new_cost_to_come
-                    self.costToGo[(newRow, newCol, newTheta)] = new_cost_to_go
-                    self.path[(newRow, newCol, newTheta)] = current_node
-                    heappush(queue, (new_distance, (newRow, newCol, newTheta)))
+            # action 1
+            (moveOnePossible, newRow, newCol, newTheta) = self.ActionMoveOne(current_node[0], current_node[1], current_node[2])
+            if(moveOnePossible):
+                updateHeap = self.UpdateAction(current_node, 1, newRow, newCol, newTheta)
+                if(updateHeap):
+                    heappush(queue, (self.distance[(newRow, newCol, newTheta)], (newRow, newCol, newTheta)))
             
-            if(self.ActionMoveTwo(current_node[0], current_node[1], current_node[2])):
-                newRow = current_node[0] + (np.sin((current_node[2] + 30) * (np.pi / 180)) / 0.5)
-                newCol = current_node[1] + (np.cos((current_node[2] + 30) * (np.pi / 180)) / 0.5)
-                newTheta = (current_node[2] + 30) % 360
-                new_cost_to_come = self.costToCome[current_node] + 1.3
-                new_cost_to_go = self.euc_heuristic(newRow, newCol)
-                new_distance = new_cost_to_come + new_cost_to_go
-                
-                if(self.distance.get((newRow, newCol, newTheta)) == None):
-                    self.distance[(newRow, newCol, newTheta)] = float('inf')
-
-                if(self.distance[(newRow, newCol, newTheta)] > new_distance):
-                    self.distance[(newRow, newCol, newTheta)] = new_distance
-                    self.costToCome[(newRow, newCol, newTheta)] = new_cost_to_come
-                    self.costToGo[(newRow, newCol, newTheta)] = new_cost_to_go
-                    self.path[(newRow, newCol, newTheta)] = current_node
-                    heappush(queue, (new_distance, (newRow, newCol, newTheta)))
+            # action 2
+            (moveTwoPossible, newRow, newCol, newTheta) = self.ActionMoveTwo(current_node[0], current_node[1], current_node[2])
+            if(moveTwoPossible):
+                updateHeap = self.UpdateAction(current_node, 1.3, newRow, newCol, newTheta)
+                if(updateHeap):
+                    heappush(queue, (self.distance[(newRow, newCol, newTheta)], (newRow, newCol, newTheta)))
                     
-            if(self.ActionMoveThree(current_node[0], current_node[1], current_node[2])):
-                newRow = current_node[0] + (np.sin((current_node[2] + 60) * (np.pi / 180)) / 0.5)
-                newCol = current_node[1] + (np.cos((current_node[2] + 60) * (np.pi / 180)) / 0.5)
-                newTheta = (current_node[2] + 60) % 360
-                new_cost_to_come = self.costToCome[current_node] + 1.6
-                new_cost_to_go = self.euc_heuristic(newRow, newCol)
-                new_distance = new_cost_to_come + new_cost_to_go
-                
-                if(self.distance.get((newRow, newCol, newTheta)) == None):
-                    self.distance[(newRow, newCol, newTheta)] = float('inf')
-
-                if(self.distance[(newRow, newCol, newTheta)] > new_distance):
-                    self.distance[(newRow, newCol, newTheta)] = new_distance
-                    self.costToCome[(newRow, newCol, newTheta)] = new_cost_to_come
-                    self.costToGo[(newRow, newCol, newTheta)] = new_cost_to_go
-                    self.path[(newRow, newCol, newTheta)] = current_node
-                    heappush(queue, (new_distance, (newRow, newCol, newTheta)))
+            # action 3
+            (moveThreePossible, newRow, newCol, newTheta) = self.ActionMoveThree(current_node[0], current_node[1], current_node[2])
+            if(moveThreePossible):
+                updateHeap = self.UpdateAction(current_node, 1.6, newRow, newCol, newTheta)
+                if(updateHeap):
+                    heappush(queue, (self.distance[(newRow, newCol, newTheta)], (newRow, newCol, newTheta)))
+              
+            # action 4
+            (moveFourPossible, newRow, newCol, newTheta) = self.ActionMoveFour(current_node[0], current_node[1], current_node[2])      
+            if(moveFourPossible):
+                updateHeap = self.UpdateAction(current_node, 1.3, newRow, newCol, newTheta)
+                if(updateHeap):
+                    heappush(queue, (self.distance[(newRow, newCol, newTheta)], (newRow, newCol, newTheta)))
                     
-            if(self.ActionMoveFour(current_node[0], current_node[1], current_node[2])):
-                newRow = current_node[0] + (np.sin((current_node[2] - 30) * (np.pi / 180)) / 0.5)
-                newCol = current_node[1] + (np.cos((current_node[2] - 30) * (np.pi / 180)) / 0.5)
-                newTheta = (current_node[2] - 30) % 360
-                new_cost_to_come = self.costToCome[current_node] + 1.3
-                new_cost_to_go = self.euc_heuristic(newRow, newCol)
-                new_distance = new_cost_to_come + new_cost_to_go
-                
-                if(self.distance.get((newRow, newCol, newTheta)) == None):
-                    self.distance[(newRow, newCol, newTheta)] = float('inf')
-
-                if(self.distance[(newRow, newCol, newTheta)] > new_distance):
-                    self.distance[(newRow, newCol, newTheta)] = new_distance
-                    self.costToCome[(newRow, newCol, newTheta)] = new_cost_to_come
-                    self.costToGo[(newRow, newCol, newTheta)] = new_cost_to_go
-                    self.path[(newRow, newCol, newTheta)] = current_node
-                    heappush(queue, (new_distance, (newRow, newCol, newTheta)))
-                    
-            if(self.ActionMoveFive(current_node[0], current_node[1], current_node[2])):
-                newRow = current_node[0] + (np.sin((current_node[2] - 60) * (np.pi / 180)) / 0.5)
-                newCol = current_node[1] + (np.cos((current_node[2] - 60) * (np.pi / 180)) / 0.5)
-                newTheta = (current_node[2] - 60) % 360
-                new_cost_to_come = self.costToCome[current_node] + 1.6
-                new_cost_to_go = self.euc_heuristic(newRow, newCol)
-                new_distance = new_cost_to_come + new_cost_to_go
-                
-                if(self.distance.get((newRow, newCol, newTheta)) == None):
-                    self.distance[(newRow, newCol, newTheta)] = float('inf')
-
-                if(self.distance[(newRow, newCol, newTheta)] > new_distance):
-                    self.distance[(newRow, newCol, newTheta)] = new_distance
-                    self.costToCome[(newRow, newCol, newTheta)] = new_cost_to_come
-                    self.costToGo[(newRow, newCol, newTheta)] = new_cost_to_go
-                    self.path[(newRow, newCol, newTheta)] = current_node
-                    heappush(queue, (new_distance, (newRow, newCol, newTheta)))
+            # action 5
+            (moveFivePossible, newRow, newCol, newTheta) = self.ActionMoveFive(current_node[0], current_node[1], current_node[2])
+            if(moveFivePossible):
+                updateHeap = self.UpdateAction(current_node, 1.6, newRow, newCol, newTheta)
+                if(updateHeap):
+                    heappush(queue, (self.distance[(newRow, newCol, newTheta)], (newRow, newCol, newTheta)))
                     
         # return if no optimal path
         if(flag == 0):
