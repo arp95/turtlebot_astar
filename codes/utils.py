@@ -136,8 +136,8 @@ class AStar(object):
     
     # action move one
     def ActionMoveOne(self, currRow, currCol, theta):
-        newRow = currRow + (np.sin(theta * (np.pi / 180)) / 0.5)
-        newCol = currCol + (np.cos(theta * (np.pi / 180)) / 0.5)
+        newRow = currRow + self.stepSize * (np.sin(theta * (np.pi / 180)) / 0.5)
+        newCol = currCol + self.stepSize * (np.cos(theta * (np.pi / 180)) / 0.5)
         newTheta = (theta + 0) % 360
 
         if(self.IsValid(newRow, newCol) and self.IsObstacle(newRow, newCol) == False and self.visited[(int(round(2.0 * newRow)), int(round(2.0 * newCol)), newTheta)] == False):
@@ -146,8 +146,8 @@ class AStar(object):
 
     # action move two
     def ActionMoveTwo(self, currRow, currCol, theta):
-        newRow = currRow + (np.sin((theta + 30) * (np.pi / 180)) / 0.5)
-        newCol = currCol + (np.cos((theta + 30) * (np.pi / 180)) / 0.5)
+        newRow = currRow + self.stepSize * (np.sin((theta + 30) * (np.pi / 180)) / 0.5)
+        newCol = currCol + self.stepSize * (np.cos((theta + 30) * (np.pi / 180)) / 0.5)
         newTheta = (theta + 30) % 360
  
         if(self.IsValid(newRow, newCol) and self.IsObstacle(newRow, newCol) == False and self.visited[(int(round(2.0 * newRow)), int(round(2.0 * newCol)), newTheta)] == False):
@@ -156,8 +156,8 @@ class AStar(object):
 
     # action move three
     def ActionMoveThree(self, currRow, currCol, theta):
-        newRow = currRow + (np.sin((theta + 60) * (np.pi / 180)) / 0.5)
-        newCol = currCol + (np.cos((theta + 60) * (np.pi / 180)) / 0.5)
+        newRow = currRow + self.stepSize * (np.sin((theta + 60) * (np.pi / 180)) / 0.5)
+        newCol = currCol + self.stepSize * (np.cos((theta + 60) * (np.pi / 180)) / 0.5)
         newTheta = (theta + 60) % 360
 
         if(self.IsValid(newRow, newCol) and self.IsObstacle(newRow, newCol) == False and self.visited[(int(round(2.0 * newRow)), int(round(2.0 * newCol)), newTheta)] == False):
@@ -166,8 +166,8 @@ class AStar(object):
 
     # action move four
     def ActionMoveFour(self, currRow, currCol, theta):
-        newRow = currRow + (np.sin((theta - 30) * (np.pi / 180)) / 0.5)
-        newCol = currCol + (np.cos((theta - 30) * (np.pi / 180)) / 0.5)
+        newRow = currRow + self.stepSize * (np.sin((theta - 30) * (np.pi / 180)) / 0.5)
+        newCol = currCol + self.stepSize * (np.cos((theta - 30) * (np.pi / 180)) / 0.5)
         newTheta = (theta - 30) % 360
 
         if(self.IsValid(newRow, newCol) and self.IsObstacle(newRow, newCol) == False and self.visited[(int(round(2.0 * newRow)), int(round(2.0 * newCol)), newTheta)] == False):
@@ -176,8 +176,8 @@ class AStar(object):
 
     # action move five
     def ActionMoveFive(self, currRow, currCol, theta):
-        newRow = currRow + (np.sin((theta - 60) * (np.pi / 180)) / 0.5)
-        newCol = currCol + (np.cos((theta - 60) * (np.pi / 180)) / 0.5)
+        newRow = currRow + self.stepSize * (np.sin((theta - 60) * (np.pi / 180)) / 0.5)
+        newCol = currCol + self.stepSize * (np.cos((theta - 60) * (np.pi / 180)) / 0.5)
         newTheta = (theta - 60) % 360
 
         if(self.IsValid(newRow, newCol) and self.IsObstacle(newRow, newCol) == False and self.visited[(int(round(2.0 * newRow)), int(round(2.0 * newCol)), newTheta)] == False):
