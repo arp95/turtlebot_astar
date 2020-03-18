@@ -45,7 +45,7 @@ class AStar(object):
         self.costToCome = {}
         self.costToGo = {}
         self.visited = {}
-        self.step_size = stepSize
+        self.stepSize = stepSize
         
         for row in range(1, 2 * self.numRows + 1):
             for col in range(1, 2 * self.numCols + 1):
@@ -227,6 +227,8 @@ class AStar(object):
         ax.set_aspect('equal')
         plt.xlim(0, 300)
         plt.ylim(0, 200)
+        plt.xlabel("x-coordinate")
+        plt.ylabel("y-coordinate")
         count = 0
 
         for index in range(1, len(explored_states)):
@@ -234,8 +236,8 @@ class AStar(object):
             explored_startY.append(explored_states[index-1][0])
             explored_endX.append(explored_states[index][1])
             explored_endY.append(explored_states[index][0])    
-            #if(count % 500 == 0):
-            #    plt.quiver(np.array((explored_startX)), np.array((explored_startY)), np.array((explored_endX)), np.array((explored_endY)), units = 'xy', scale = 10, color = 'g', headwidth = 0.5, headlength = 0)
+            #if(count % 500 == 0 or (index > 11000 and index % 100 == 0) or index > 12600):
+            #    plt.quiver(np.array((explored_startX)), np.array((explored_startY)), np.array((explored_endX)), np.array((explored_endY)), units = 'xy', scale = 10, color = 'g', headwidth = 0.5, headlength = 0, label='Explored region')
             #    plt.savefig("output1/sample" + str(count) + ".png")
             count = count + 1
     
@@ -245,14 +247,15 @@ class AStar(object):
                 startY.append(backtrack_states[index-1][0])
                 endX.append(backtrack_states[index][1])
                 endY.append(backtrack_states[index][0])    
-                #if(count % 1 == 0):
-                #    plt.quiver(np.array((startX)), np.array((startY)), np.array((endX)), np.array((endY)), units = 'xy', scale = 10, color = 'r', headwidth = 0.5, headlength = 0)
+                #if(count % 2 == 0):
+                #    plt.quiver(np.array((startX)), np.array((startY)), np.array((endX)), np.array((endY)), units = 'xy', scale = 10, color = 'r', headwidth = 0.5, headlength = 0, label='Backtrack path')
                 #    plt.savefig("output1/sample" + str(count) + ".png")
                 count = count + 1
 
-        plt.quiver(np.array((explored_startX)), np.array((explored_startY)), np.array((explored_endX)), np.array((explored_endY)), units = 'xy', scale = 5, color = 'g', headwidth = 0.5, headlength = 0)
+        plt.quiver(np.array((explored_startX)), np.array((explored_startY)), np.array((explored_endX)), np.array((explored_endY)), units = 'xy', scale = 5, color = 'g', headwidth = 0.5, headlength = 0, label='Explored region')
         if(len(backtrack_states) > 0):
-            plt.quiver(np.array((startX)), np.array((startY)), np.array((endX)), np.array((endY)), units = 'xy', scale = 5, color = 'r', headwidth = 0.5, headlength = 0)
+            plt.quiver(np.array((startX)), np.array((startY)), np.array((endX)), np.array((endY)), units = 'xy', scale = 5, color = 'r', headwidth = 0.5, headlength = 0, label='Backtrack path')
+        plt.legend()
         plt.show()
         plt.close()
         
@@ -265,10 +268,10 @@ class AStar(object):
         # mark source node and create a queue
         explored_states = []
         queue = []
-        self.distance[self.start] = 0
         self.costToCome[self.start] = 0
         self.costToGo[self.start] = self.euc_heuristic(self.start[0], self.start[1])
-        heappush(queue, (self.costToGo[self.start], self.start))
+        self.distance[self.start] = self.costToCome[self.start] + self.costToGo[self.start]
+        heappush(queue, (self.distance[self.start], self.start))
         backtrackNode = None
         flag = 0
         steps = 0
@@ -283,13 +286,13 @@ class AStar(object):
             
             # if goal node then break, using the distance formula
             if(np.square(np.abs(current_node[0] - self.goal[0])) + np.square(np.abs(current_node[1] - self.goal[1])) < 0.5625):
-                flag = 1
                 backtrackNode = current_node
+                flag = 1
                 break
                
             # break if steps greater than 1000000
-            if(steps > 1000000):
-                break
+            #if(steps > 1000000):
+            #    break
 
             # traverse the edges
             # action 1

@@ -17,5 +17,9 @@ python Astar_rigid.py
 ```
 
 
+### Results
+The following is an example of A-star algorithm applied on a rigid robot:
+![Screenshot](screen.png)
+
 ### Software Required
 To run the .py files, use Python 3. Standard Python 3 libraries like numpy, heapq and OpenCV are used.
