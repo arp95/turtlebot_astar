@@ -15,4 +15,4 @@ python Astar_rigid.py
 
 
 Software Required:
-To run the .py files, use Python 3. Standard Python 3 libraries like numpy, heapq and OpenCV are used.
+To run the .py files, use Python 3. Standard Python 3 libraries like numpy, heapq and matplotlib are used.
