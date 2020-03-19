@@ -185,8 +185,8 @@ class AStar(object):
         return (False, newRow, newCol, newTheta)
     
     # update action
-    def UpdateAction(self, current_node, weight, newRow, newCol, newTheta):
-        new_cost_to_come = self.costToCome[current_node] + weight
+    def UpdateAction(self, currentNode, weight, newRow, newCol, newTheta):
+        new_cost_to_come = self.costToCome[currentNode] + weight
         new_cost_to_go = self.euc_heuristic(newRow, newCol)
         new_distance = new_cost_to_come + new_cost_to_go
 
@@ -196,7 +196,7 @@ class AStar(object):
             self.distance[(newRow, newCol, newTheta)] = new_distance
             self.costToCome[(newRow, newCol, newTheta)] = new_cost_to_come
             self.costToGo[(newRow, newCol, newTheta)] = new_cost_to_go
-            self.path[(newRow, newCol, newTheta)] = current_node
+            self.path[(newRow, newCol, newTheta)] = currentNode
             return True
         return False
 
@@ -213,7 +213,7 @@ class AStar(object):
         out.release()
 
     # animate path
-    def animate(self, explored_states, backtrack_states, path):
+    def animate(self, exploredStates, backtrackStates, path):
         startX = []
         startY = []
         endX = []
@@ -223,55 +223,56 @@ class AStar(object):
         explored_endX = []
         explored_endY = []
         fig, ax = plt.subplots()
+        plt.xlabel("x-coordinate")
+        plt.ylabel("y-coordinate")
         plt.grid()
         ax.set_aspect('equal')
         plt.xlim(0, 300)
         plt.ylim(0, 200)
-        plt.xlabel("x-coordinate")
-        plt.ylabel("y-coordinate")
         count = 0
 
-        for index in range(1, len(explored_states)):
-            explored_startX.append(explored_states[index-1][1])
-            explored_startY.append(explored_states[index-1][0])
-            explored_endX.append(explored_states[index][1])
-            explored_endY.append(explored_states[index][0])    
+        for index in range(1, len(exploredStates)):
+            parentNode = self.path[exploredStates[index]]
+            explored_startX.append(parentNode[1])
+            explored_startY.append(parentNode[0])
+            explored_endX.append(exploredStates[index][1] - parentNode[1])
+            explored_endY.append(exploredStates[index][0] - parentNode[0])    
             #if(count % 500 == 0 or (index > 11000 and index % 100 == 0) or index > 12600):
-            #    plt.quiver(np.array((explored_startX)), np.array((explored_startY)), np.array((explored_endX)), np.array((explored_endY)), units = 'xy', scale = 10, color = 'g', headwidth = 0.5, headlength = 0, label='Explored region')
+            #    plt.quiver(np.array((explored_startX)), np.array((explored_startY)), np.array((explored_endX)), np.array((explored_endY)), units = 'xy', scale = 1, color = 'g', label='Explored region')
             #    plt.savefig("output1/sample" + str(count) + ".png")
             count = count + 1
     
-        if(len(backtrack_states) > 0):
-            for index in range(1, len(backtrack_states)):
-                startX.append(backtrack_states[index-1][1])
-                startY.append(backtrack_states[index-1][0])
-                endX.append(backtrack_states[index][1])
-                endY.append(backtrack_states[index][0])    
+        if(len(backtrackStates) > 0):
+            for index in range(1, len(backtrackStates)):
+                startX.append(backtrackStates[index-1][1])
+                startY.append(backtrackStates[index-1][0])
+                endX.append(backtrackStates[index][1] - backtrackStates[index-1][1])
+                endY.append(backtrackStates[index][0] - backtrackStates[index-1][0])    
                 #if(count % 2 == 0):
-                #    plt.quiver(np.array((startX)), np.array((startY)), np.array((endX)), np.array((endY)), units = 'xy', scale = 10, color = 'r', headwidth = 0.5, headlength = 0, label='Backtrack path')
+                #    plt.quiver(np.array((startX)), np.array((startY)), np.array((endX)), np.array((endY)), units = 'xy', scale = 1, color = 'r', label='Backtrack path')
                 #    plt.savefig("output1/sample" + str(count) + ".png")
                 count = count + 1
 
-        plt.quiver(np.array((explored_startX)), np.array((explored_startY)), np.array((explored_endX)), np.array((explored_endY)), units = 'xy', scale = 5, color = 'g', headwidth = 0.5, headlength = 0, label='Explored region')
-        if(len(backtrack_states) > 0):
-            plt.quiver(np.array((startX)), np.array((startY)), np.array((endX)), np.array((endY)), units = 'xy', scale = 5, color = 'r', headwidth = 0.5, headlength = 0, label='Backtrack path')
+        plt.quiver(np.array((explored_startX)), np.array((explored_startY)), np.array((explored_endX)), np.array((explored_endY)), units = 'xy', scale = 1, color = 'g', label='Explored region')
+        if(len(backtrackStates) > 0):
+            plt.quiver(np.array((startX)), np.array((startY)), np.array((endX)), np.array((endY)), units = 'xy', scale = 1, color = 'r', label='Backtrack path')
         plt.legend()
         plt.show()
         plt.close()
         
     # euc heuristic
-    def euc_heuristic(self, row, col):
-        return np.sqrt(((self.goal[0] - row)**2) + ((self.goal[1] - col)**2)) / 0.5
+    def euc_heuristic(self, row, col, weight = 1.0):
+        return weight * (np.sqrt(((self.goal[0] - row)**2) + ((self.goal[1] - col)**2)) / 0.5)
     
     # a-star algo
     def search(self):
         # mark source node and create a queue
-        explored_states = []
+        exploredStates = []
         queue = []
         self.costToCome[self.start] = 0
         self.costToGo[self.start] = self.euc_heuristic(self.start[0], self.start[1])
         self.distance[self.start] = self.costToCome[self.start] + self.costToGo[self.start]
-        heappush(queue, (self.distance[self.start], self.start))
+        heappush(queue, (self.distance[self.start], self.costToCome[self.start], self.start))
         backtrackNode = None
         flag = 0
         steps = 0
@@ -279,67 +280,67 @@ class AStar(object):
         # run a-star
         while(len(queue) > 0):
             # get current node
-            _, current_node = heappop(queue)
-            self.visited[(int(round(2.0 * current_node[0])), int(round(2.0 * current_node[1])), current_node[2])] = True
-            explored_states.append(current_node)
+            _, _, currentNode = heappop(queue)
+            self.visited[(int(round(2.0 * currentNode[0])), int(round(2.0 * currentNode[1])), currentNode[2])] = True
+            exploredStates.append(currentNode)
             steps = steps + 1
             
             # if goal node then break, using the distance formula
-            if(np.square(np.abs(current_node[0] - self.goal[0])) + np.square(np.abs(current_node[1] - self.goal[1])) < 0.5625):
-                backtrackNode = current_node
+            if(np.square(np.abs(currentNode[0] - self.goal[0])) + np.square(np.abs(currentNode[1] - self.goal[1])) < 0.5625):
+                backtrackNode = currentNode
                 flag = 1
                 break
                
-            # break if steps greater than 1000000
-            #if(steps > 1000000):
-            #    break
+            # break if steps greater than 5000000
+            if(steps > 5000000):
+                break
 
             # traverse the edges
             # action 1
-            (moveOnePossible, newRow, newCol, newTheta) = self.ActionMoveOne(current_node[0], current_node[1], current_node[2])
+            (moveOnePossible, newRow, newCol, newTheta) = self.ActionMoveOne(currentNode[0], currentNode[1], currentNode[2])
             if(moveOnePossible):
-                updateHeap = self.UpdateAction(current_node, 1, newRow, newCol, newTheta)
+                updateHeap = self.UpdateAction(currentNode, 1, newRow, newCol, newTheta)
                 if(updateHeap):
-                    heappush(queue, (self.distance[(newRow, newCol, newTheta)], (newRow, newCol, newTheta)))
+                    heappush(queue, (self.distance[(newRow, newCol, newTheta)], self.costToCome[(newRow, newCol, newTheta)], (newRow, newCol, newTheta)))
             
             # action 2
-            (moveTwoPossible, newRow, newCol, newTheta) = self.ActionMoveTwo(current_node[0], current_node[1], current_node[2])
+            (moveTwoPossible, newRow, newCol, newTheta) = self.ActionMoveTwo(currentNode[0], currentNode[1], currentNode[2])
             if(moveTwoPossible):
-                updateHeap = self.UpdateAction(current_node, 1.3, newRow, newCol, newTheta)
+                updateHeap = self.UpdateAction(currentNode, 1.3, newRow, newCol, newTheta)
                 if(updateHeap):
-                    heappush(queue, (self.distance[(newRow, newCol, newTheta)], (newRow, newCol, newTheta)))
+                    heappush(queue, (self.distance[(newRow, newCol, newTheta)], self.costToCome[(newRow, newCol, newTheta)], (newRow, newCol, newTheta)))
                     
             # action 3
-            (moveThreePossible, newRow, newCol, newTheta) = self.ActionMoveThree(current_node[0], current_node[1], current_node[2])
+            (moveThreePossible, newRow, newCol, newTheta) = self.ActionMoveThree(currentNode[0], currentNode[1], currentNode[2])
             if(moveThreePossible):
-                updateHeap = self.UpdateAction(current_node, 1.6, newRow, newCol, newTheta)
+                updateHeap = self.UpdateAction(currentNode, 1.6, newRow, newCol, newTheta)
                 if(updateHeap):
-                    heappush(queue, (self.distance[(newRow, newCol, newTheta)], (newRow, newCol, newTheta)))
+                    heappush(queue, (self.distance[(newRow, newCol, newTheta)], self.costToCome[(newRow, newCol, newTheta)], (newRow, newCol, newTheta)))
               
             # action 4
-            (moveFourPossible, newRow, newCol, newTheta) = self.ActionMoveFour(current_node[0], current_node[1], current_node[2])      
+            (moveFourPossible, newRow, newCol, newTheta) = self.ActionMoveFour(currentNode[0], currentNode[1], currentNode[2])      
             if(moveFourPossible):
-                updateHeap = self.UpdateAction(current_node, 1.3, newRow, newCol, newTheta)
+                updateHeap = self.UpdateAction(currentNode, 1.3, newRow, newCol, newTheta)
                 if(updateHeap):
-                    heappush(queue, (self.distance[(newRow, newCol, newTheta)], (newRow, newCol, newTheta)))
+                    heappush(queue, (self.distance[(newRow, newCol, newTheta)], self.costToCome[(newRow, newCol, newTheta)], (newRow, newCol, newTheta)))
                     
             # action 5
-            (moveFivePossible, newRow, newCol, newTheta) = self.ActionMoveFive(current_node[0], current_node[1], current_node[2])
+            (moveFivePossible, newRow, newCol, newTheta) = self.ActionMoveFive(currentNode[0], currentNode[1], currentNode[2])
             if(moveFivePossible):
-                updateHeap = self.UpdateAction(current_node, 1.6, newRow, newCol, newTheta)
+                updateHeap = self.UpdateAction(currentNode, 1.6, newRow, newCol, newTheta)
                 if(updateHeap):
-                    heappush(queue, (self.distance[(newRow, newCol, newTheta)], (newRow, newCol, newTheta)))
+                    heappush(queue, (self.distance[(newRow, newCol, newTheta)], self.costToCome[(newRow, newCol, newTheta)], (newRow, newCol, newTheta)))
                     
         # return if no optimal path
         if(flag == 0):
-            return (explored_states, [], float('inf'))
+            return (exploredStates, [], float('inf'))
         
         # backtrack path
-        backtrack_states = []
+        backtrackStates = []
         node = backtrackNode
         while(node != self.start):
-            backtrack_states.append(node)
+            backtrackStates.append(node)
             node = self.path[node]
-        backtrack_states.append(self.start)
-        backtrack_states = list(reversed(backtrack_states))      
-        return (explored_states, backtrack_states, self.distance[backtrackNode])
+        backtrackStates.append(self.start)
+        backtrackStates = list(reversed(backtrackStates))      
+        return (exploredStates, backtrackStates, self.distance[backtrackNode])
