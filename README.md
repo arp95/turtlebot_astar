@@ -18,7 +18,7 @@ python Astar_rigid.py
 
 
 ### Results
-The following is an example of A-star algorithm applied on a rigid robot:
+The following is an example of A-star algorithm applied on a rigid robot (green - explored region and red - backtrack path):
 ![Screenshot](screen.png)
 
 ### Software Required
