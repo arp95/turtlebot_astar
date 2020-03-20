@@ -33,7 +33,7 @@ from heapq import heappush, heappop
 # class for AStar
 class AStar(object):
     # init function
-    def __init__(self, start, goal, clearance, radius, stepSize):
+    def __init__(self, start, goal, clearance, radius, stepSize, actionTheta = 30):
         self.start = start
         self.goal = goal
         self.numRows = 200
@@ -46,10 +46,11 @@ class AStar(object):
         self.costToGo = {}
         self.visited = {}
         self.stepSize = stepSize
+        self.actionTheta = actionTheta
         
         for row in range(1, 2 * self.numRows + 1):
             for col in range(1, 2 * self.numCols + 1):
-                for theta in range(0, 360, 30):            
+                for theta in range(0, 360, self.actionTheta):            
                     self.visited[(row, col, theta)] = False
     
     # move is valid 
@@ -146,9 +147,9 @@ class AStar(object):
 
     # action move two
     def ActionMoveTwo(self, currRow, currCol, theta):
-        newRow = currRow + self.stepSize * (np.sin((theta + 30) * (np.pi / 180)) / 0.5)
-        newCol = currCol + self.stepSize * (np.cos((theta + 30) * (np.pi / 180)) / 0.5)
-        newTheta = (theta + 30) % 360
+        newRow = currRow + self.stepSize * (np.sin((theta + self.actionTheta) * (np.pi / 180)) / 0.5)
+        newCol = currCol + self.stepSize * (np.cos((theta + self.actionTheta) * (np.pi / 180)) / 0.5)
+        newTheta = (theta + self.actionTheta) % 360
  
         if(self.IsValid(newRow, newCol) and self.IsObstacle(newRow, newCol) == False and self.visited[(int(round(2.0 * newRow)), int(round(2.0 * newCol)), newTheta)] == False):
             return (True, newRow, newCol, newTheta)
@@ -156,9 +157,9 @@ class AStar(object):
 
     # action move three
     def ActionMoveThree(self, currRow, currCol, theta):
-        newRow = currRow + self.stepSize * (np.sin((theta + 60) * (np.pi / 180)) / 0.5)
-        newCol = currCol + self.stepSize * (np.cos((theta + 60) * (np.pi / 180)) / 0.5)
-        newTheta = (theta + 60) % 360
+        newRow = currRow + self.stepSize * (np.sin((theta + (2 * self.actionTheta)) * (np.pi / 180)) / 0.5)
+        newCol = currCol + self.stepSize * (np.cos((theta + (2 * self.actionTheta)) * (np.pi / 180)) / 0.5)
+        newTheta = (theta + (2 * self.actionTheta)) % 360
 
         if(self.IsValid(newRow, newCol) and self.IsObstacle(newRow, newCol) == False and self.visited[(int(round(2.0 * newRow)), int(round(2.0 * newCol)), newTheta)] == False):
             return (True, newRow, newCol, newTheta)
@@ -166,9 +167,9 @@ class AStar(object):
 
     # action move four
     def ActionMoveFour(self, currRow, currCol, theta):
-        newRow = currRow + self.stepSize * (np.sin((theta - 30) * (np.pi / 180)) / 0.5)
-        newCol = currCol + self.stepSize * (np.cos((theta - 30) * (np.pi / 180)) / 0.5)
-        newTheta = (theta - 30) % 360
+        newRow = currRow + self.stepSize * (np.sin((theta - self.actionTheta) * (np.pi / 180)) / 0.5)
+        newCol = currCol + self.stepSize * (np.cos((theta - self.actionTheta) * (np.pi / 180)) / 0.5)
+        newTheta = (theta - self.actionTheta) % 360
 
         if(self.IsValid(newRow, newCol) and self.IsObstacle(newRow, newCol) == False and self.visited[(int(round(2.0 * newRow)), int(round(2.0 * newCol)), newTheta)] == False):
             return (True, newRow, newCol, newTheta)
@@ -176,9 +177,9 @@ class AStar(object):
 
     # action move five
     def ActionMoveFive(self, currRow, currCol, theta):
-        newRow = currRow + self.stepSize * (np.sin((theta - 60) * (np.pi / 180)) / 0.5)
-        newCol = currCol + self.stepSize * (np.cos((theta - 60) * (np.pi / 180)) / 0.5)
-        newTheta = (theta - 60) % 360
+        newRow = currRow + self.stepSize * (np.sin((theta - (2 * self.actionTheta)) * (np.pi / 180)) / 0.5)
+        newCol = currCol + self.stepSize * (np.cos((theta - (2 * self.actionTheta)) * (np.pi / 180)) / 0.5)
+        newTheta = (theta - (2 * self.actionTheta)) % 360
 
         if(self.IsValid(newRow, newCol) and self.IsObstacle(newRow, newCol) == False and self.visited[(int(round(2.0 * newRow)), int(round(2.0 * newCol)), newTheta)] == False):
             return (True, newRow, newCol, newTheta)
@@ -260,7 +261,7 @@ class AStar(object):
         plt.show()
         plt.close()
         
-    # euc heuristic
+    # euc heuristic (becomes weighted a-star when weight made greater than 1.0)
     def euc_heuristic(self, row, col, weight = 1.0):
         return weight * (np.sqrt(((self.goal[0] - row)**2) + ((self.goal[1] - col)**2)) / 0.5)
     
@@ -313,7 +314,7 @@ class AStar(object):
             # action 3
             (moveThreePossible, newRow, newCol, newTheta) = self.ActionMoveThree(currentNode[0], currentNode[1], currentNode[2])
             if(moveThreePossible):
-                updateHeap = self.UpdateAction(currentNode, 1.6, newRow, newCol, newTheta)
+                updateHeap = self.UpdateAction(currentNode, 1.9, newRow, newCol, newTheta)
                 if(updateHeap):
                     heappush(queue, (self.distance[(newRow, newCol, newTheta)], self.costToCome[(newRow, newCol, newTheta)], (newRow, newCol, newTheta)))
               
@@ -327,7 +328,7 @@ class AStar(object):
             # action 5
             (moveFivePossible, newRow, newCol, newTheta) = self.ActionMoveFive(currentNode[0], currentNode[1], currentNode[2])
             if(moveFivePossible):
-                updateHeap = self.UpdateAction(currentNode, 1.6, newRow, newCol, newTheta)
+                updateHeap = self.UpdateAction(currentNode, 1.9, newRow, newCol, newTheta)
                 if(updateHeap):
                     heappush(queue, (self.distance[(newRow, newCol, newTheta)], self.costToCome[(newRow, newCol, newTheta)], (newRow, newCol, newTheta)))
                     
