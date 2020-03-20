@@ -17,9 +17,14 @@ python Astar_rigid.py
 ```
 
 
+### Obstacle Map
+![Screenshot](map.jpg)
+
+
 ### Results
 The following is an example of A-star algorithm applied on a rigid robot (green - explored region and red - backtrack path):
 ![Screenshot](screen.png)
+
 
 ### Software Required
 To run the .py files, use Python 3. Standard Python 3 libraries like numpy, heapq and matplotlib are used.
