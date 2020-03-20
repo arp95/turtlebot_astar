@@ -18,12 +18,12 @@ python Astar_rigid.py
 
 
 ### Obstacle Map
-![Screenshot](map.jpg)
+![Screenshot](output/map.jpg)
 
 
 ### Results
 The following is an example of A-star algorithm applied on a rigid robot (Start Node- (50, 30, 60), Goal Node- (150, 150), Radius- 1, Clearance- 1, Step Size- 1):
-![Screenshot](screen.png)
+![Screenshot](output/screen.png)
 
 
 ### Software Required
