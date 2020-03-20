@@ -22,7 +22,7 @@ python Astar_rigid.py
 
 
 ### Results
-The following is an example of A-star algorithm applied on a rigid robot (green - explored region and red - backtrack path):
+The following is an example of A-star algorithm applied on a rigid robot (Start Node- (50, 30, 60), Goal Node- (150, 150), Radius- 1, Clearance- 1, Step Size- 1):
 ![Screenshot](screen.png)
 
 
