@@ -27,6 +27,7 @@
 # header files
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.lines as mlines
 from heapq import heappush, heappop
 
 
@@ -55,7 +56,7 @@ class AStar(object):
     
     # move is valid 
     def IsValid(self, currRow, currCol):
-        return (currRow >= (1 + self.radius + self.clearance) and currRow <= (self.numRows - self.radius - self.clearance) and currCol >= (1 + self.radius + self.clearance) and currCol <= (self.numCols - self.radius - self.clearance))
+        return (currRow >= (self.radius + self.clearance) and currRow <= (self.numRows - self.radius - self.clearance) and currCol >= (self.radius + self.clearance) and currCol <= (self.numCols - self.radius - self.clearance))
 
     # checks for an obstacle
     def IsObstacle(self, row, col):
@@ -231,7 +232,22 @@ class AStar(object):
         plt.xlim(0, 300)
         plt.ylim(0, 200)
         count = 0
+        
+        # obstacle space
+        obstacleX = []
+        obstacleY = []
+        size = []
+        for index1 in range(0, 300):
+            for index2 in range(0, 200):
+                if(self.IsObstacle(index2/0.5, index1/0.5)):
+                    obstacleX.append(index1/0.5)
+                    obstacleY.append(index2/0.5)     
+                    size.append(15)      
+        obstacleX = np.array(obstacleX)
+        obstacleY = np.array(obstacleY)
+        plt.scatter(obstacleX, obstacleY, color='b', s=size)
 
+        # explore node space
         for index in range(1, len(exploredStates)):
             parentNode = self.path[exploredStates[index]]
             explored_startX.append(parentNode[1])
@@ -240,9 +256,10 @@ class AStar(object):
             explored_endY.append(exploredStates[index][0] - parentNode[0])    
             #if(count % 500 == 0 or (index > 11000 and index % 100 == 0) or index > 12600):
             #    plt.quiver(np.array((explored_startX)), np.array((explored_startY)), np.array((explored_endX)), np.array((explored_endY)), units = 'xy', scale = 1, color = 'g', label='Explored region')
-            #    plt.savefig("output1/sample" + str(count) + ".png")
+            #    plt.savefig("output1/sample" + str(count) + ".png", dpi=1700)
             count = count + 1
     
+        # backtrack space
         if(len(backtrackStates) > 0):
             for index in range(1, len(backtrackStates)):
                 startX.append(backtrackStates[index-1][1])
@@ -251,12 +268,13 @@ class AStar(object):
                 endY.append(backtrackStates[index][0] - backtrackStates[index-1][0])    
                 #if(count % 2 == 0):
                 #    plt.quiver(np.array((startX)), np.array((startY)), np.array((endX)), np.array((endY)), units = 'xy', scale = 1, color = 'r', label='Backtrack path')
-                #    plt.savefig("output1/sample" + str(count) + ".png")
+                #    plt.savefig("output1/sample" + str(count) + ".png", dpi=1700)
                 count = count + 1
 
         plt.quiver(np.array((explored_startX)), np.array((explored_startY)), np.array((explored_endX)), np.array((explored_endY)), units = 'xy', scale = 1, color = 'g', label='Explored region')
         if(len(backtrackStates) > 0):
             plt.quiver(np.array((startX)), np.array((startY)), np.array((endX)), np.array((endY)), units = 'xy', scale = 1, color = 'r', label='Backtrack path')
+        plt.savefig("sample.png", dpi=1700)
         plt.legend()
         plt.show()
         plt.close()
