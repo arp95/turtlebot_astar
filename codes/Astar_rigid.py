@@ -29,20 +29,22 @@ from utils import *
 import sys
 
 
-startCol = float(input("Enter the x-coordinate for start node : "))
-startRow = float(input("Enter the y-coordinate for start node : "))
+startX = float(input("Enter the x-coordinate for start node : "))
+startY = float(input("Enter the y-coordinate for start node : "))
 startOrientation = float(input("Enter the orientation for start node : "))
-goalCol = float(input("Enter the x-coordinate for goal node : "))
-goalRow = float(input("Enter the y-coordinate for goal node : "))
-radius = float(input("Enter the radius of the rigid robot : "))
+goalX = float(input("Enter the x-coordinate for goal node : "))
+goalY = float(input("Enter the y-coordinate for goal node : "))
+firstRPM = float(input("Enter the first value of RPM : "))
+secondRPM = float(input("Enter the second value of RPM : "))
 clearance = float(input("Enter the clearance of the rigid robot : "))
-stepSize = float(input("Enter the step size : "))
 
 # take start and goal node as input
-start = (startRow, startCol, startOrientation)
-goal = (goalRow, goalCol)
-astar = AStar(start, goal, clearance, radius, stepSize)
+start = (startX, startY, startOrientation)
+goal = (goalX, goalY)
+wheelRPM = (firstRPM, secondRPM)
+astar = AStar(start, goal, wheelRPM, clearance)
 
+"""
 if(astar.IsValid(start[0], start[1])):
     if(astar.IsValid(goal[0], goal[1])):
         if(astar.IsObstacle(start[0],start[1]) == False):
@@ -70,3 +72,4 @@ if(astar.IsValid(start[0], start[1])):
 else:
     print("The entered start node is outside the map ")
     print("Please check README.md file for running Astar_rigid.py file.")
+"""

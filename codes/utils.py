@@ -34,29 +34,31 @@ from heapq import heappush, heappop
 # class for AStar
 class AStar(object):
     # init function
-    def __init__(self, start, goal, clearance, radius, stepSize, actionTheta = 30):
+    def __init__(self, start, goal, wheelRPM, clearance):
         self.start = start
         self.goal = goal
-        self.numRows = 200
-        self.numCols = 300
-        self.clearance = clearance
-        self.radius = radius
+        self.xLength = 10.2
+        self.yLength = 10.2
+        self.innerXLength = 10
+        self.innerYLength = 10
+        self.wheelRPM = wheelRPM
+        self.clearance = clearance + 1
+        self.radius = 1
+        self.wheelDistance = 1
         self.distance = {}
         self.path = {}
         self.costToCome = {}
         self.costToGo = {}
         self.visited = {}
-        self.stepSize = stepSize
-        self.actionTheta = actionTheta
         
-        for row in range(1, 2 * self.numRows + 1):
-            for col in range(1, 2 * self.numCols + 1):
-                for theta in range(0, 360, self.actionTheta):            
-                    self.visited[(row, col, theta)] = False
+        for x in range(1, 2 * self.innerXLength + 1):
+            for y in range(1, 2 * self.innerYLength + 1):
+                for theta in range(0, 360, 10):            
+                    self.visited[(x, y, theta)] = False
     
     # move is valid 
-    def IsValid(self, currRow, currCol):
-        return (currRow >= (self.radius + self.clearance) and currRow <= (self.numRows - self.radius - self.clearance) and currCol >= (self.radius + self.clearance) and currCol <= (self.numCols - self.radius - self.clearance))
+    def IsValid(self, currX, currY):
+        return (currX >= (self.radius + self.clearance) and currX <= (self.innerXLength - self.radius - self.clearance) and currY >= (self.radius + self.clearance) and currY <= (self.innerYLength - self.radius - self.clearance))
 
     # checks for an obstacle
     def IsObstacle(self, row, col):
@@ -137,68 +139,98 @@ class AStar(object):
         return False
     
     # action move one
-    def ActionMoveOne(self, currRow, currCol, theta):
-        newRow = currRow + self.stepSize * (np.sin(theta * (np.pi / 180)) / 0.5)
-        newCol = currCol + self.stepSize * (np.cos(theta * (np.pi / 180)) / 0.5)
-        newTheta = (theta + 0) % 360
+    def ActionMoveOne(self, currentNode, leftRPM, rightRPM):
+        newX = 0
+        newY = 0
+        newTheta = 0
 
-        if(self.IsValid(newRow, newCol) and self.IsObstacle(newRow, newCol) == False and self.visited[(int(round(2.0 * newRow)), int(round(2.0 * newCol)), newTheta)] == False):
-            return (True, newRow, newCol, newTheta)
-        return (False, newRow, newCol, newTheta)
+        if(self.IsValid(newX, newY) and self.IsObstacle(newX, newY) == False and self.visited[(int(round(2.0 * newX)), int(round(2.0 * newY)), newTheta)] == False):
+            return (True, newX, newY, newTheta)
+        return (False, newX, newY, newTheta)
 
     # action move two
-    def ActionMoveTwo(self, currRow, currCol, theta):
-        newRow = currRow + self.stepSize * (np.sin((theta + self.actionTheta) * (np.pi / 180)) / 0.5)
-        newCol = currCol + self.stepSize * (np.cos((theta + self.actionTheta) * (np.pi / 180)) / 0.5)
-        newTheta = (theta + self.actionTheta) % 360
+    def ActionMoveTwo(self, currentNode, leftRPM, rightRPM):
+        newX = 0
+        newY = 0
+        newTheta = 0
  
-        if(self.IsValid(newRow, newCol) and self.IsObstacle(newRow, newCol) == False and self.visited[(int(round(2.0 * newRow)), int(round(2.0 * newCol)), newTheta)] == False):
-            return (True, newRow, newCol, newTheta)
-        return (False, newRow, newCol, newTheta)
+        if(self.IsValid(newX, newY) and self.IsObstacle(newX, newY) == False and self.visited[(int(round(2.0 * newX)), int(round(2.0 * newY)), newTheta)] == False):
+            return (True, newX, newY, newTheta)
+        return (False, newX, newY, newTheta)
 
     # action move three
-    def ActionMoveThree(self, currRow, currCol, theta):
-        newRow = currRow + self.stepSize * (np.sin((theta + (2 * self.actionTheta)) * (np.pi / 180)) / 0.5)
-        newCol = currCol + self.stepSize * (np.cos((theta + (2 * self.actionTheta)) * (np.pi / 180)) / 0.5)
-        newTheta = (theta + (2 * self.actionTheta)) % 360
+    def ActionMoveThree(self, currentNode, leftRPM, rightRPM):
+        newX = 0
+        newY = 0
+        newTheta = 0
 
-        if(self.IsValid(newRow, newCol) and self.IsObstacle(newRow, newCol) == False and self.visited[(int(round(2.0 * newRow)), int(round(2.0 * newCol)), newTheta)] == False):
-            return (True, newRow, newCol, newTheta)
-        return (False, newRow, newCol, newTheta)
+        if(self.IsValid(newX, newY) and self.IsObstacle(newX, newY) == False and self.visited[(int(round(2.0 * newX)), int(round(2.0 * newY)), newTheta)] == False):
+            return (True, newX, newY, newTheta)
+        return (False, newX, newY, newTheta)
 
     # action move four
-    def ActionMoveFour(self, currRow, currCol, theta):
-        newRow = currRow + self.stepSize * (np.sin((theta - self.actionTheta) * (np.pi / 180)) / 0.5)
-        newCol = currCol + self.stepSize * (np.cos((theta - self.actionTheta) * (np.pi / 180)) / 0.5)
-        newTheta = (theta - self.actionTheta) % 360
+    def ActionMoveFour(self, currentNode, leftRPM, rightRPM):
+        newX = 0
+        newY = 0
+        newTheta = 0
 
-        if(self.IsValid(newRow, newCol) and self.IsObstacle(newRow, newCol) == False and self.visited[(int(round(2.0 * newRow)), int(round(2.0 * newCol)), newTheta)] == False):
-            return (True, newRow, newCol, newTheta)
-        return (False, newRow, newCol, newTheta)
+        if(self.IsValid(newX, newY) and self.IsObstacle(newX, newY) == False and self.visited[(int(round(2.0 * newX)), int(round(2.0 * newY)), newTheta)] == False):
+            return (True, newX, newY, newTheta)
+        return (False, newX, newY, newTheta)
 
     # action move five
-    def ActionMoveFive(self, currRow, currCol, theta):
-        newRow = currRow + self.stepSize * (np.sin((theta - (2 * self.actionTheta)) * (np.pi / 180)) / 0.5)
-        newCol = currCol + self.stepSize * (np.cos((theta - (2 * self.actionTheta)) * (np.pi / 180)) / 0.5)
-        newTheta = (theta - (2 * self.actionTheta)) % 360
+    def ActionMoveFive(self, currentNode, leftRPM, rightRPM):
+        newX = 0
+        newY = 0
+        newTheta = 0
 
-        if(self.IsValid(newRow, newCol) and self.IsObstacle(newRow, newCol) == False and self.visited[(int(round(2.0 * newRow)), int(round(2.0 * newCol)), newTheta)] == False):
-            return (True, newRow, newCol, newTheta)
-        return (False, newRow, newCol, newTheta)
+        if(self.IsValid(newX, newY) and self.IsObstacle(newX, newY) == False and self.visited[(int(round(2.0 * newX)), int(round(2.0 * newY)), newTheta)] == False):
+            return (True, newX, newY, newTheta)
+        return (False, newX, newY, newTheta)
+
+    # action move six
+    def ActionMoveSix(self, currentNode, leftRPM, rightRPM):
+        newX = 0
+        newY = 0
+        newTheta = 0
+
+        if(self.IsValid(newX, newY) and self.IsObstacle(newX, newY) == False and self.visited[(int(round(2.0 * newX)), int(round(2.0 * newY)), newTheta)] == False):
+            return (True, newX, newY, newTheta)
+        return (False, newX, newY, newTheta)
     
-    # update action
-    def UpdateAction(self, currentNode, weight, newRow, newCol, newTheta):
-        new_cost_to_come = self.costToCome[currentNode] + weight
-        new_cost_to_go = self.euc_heuristic(newRow, newCol)
-        new_distance = new_cost_to_come + new_cost_to_go
+    # action move seven
+    def ActionMoveSeven(self, currentNode, leftRPM, rightRPM):
+        newX = 0
+        newY = 0
+        newTheta = 0
 
-        if(self.distance.get((newRow, newCol, newTheta)) == None):
-            self.distance[(newRow, newCol, newTheta)] = float('inf')                    
-        if(self.distance[(newRow, newCol, newTheta)] > new_distance):
-            self.distance[(newRow, newCol, newTheta)] = new_distance
-            self.costToCome[(newRow, newCol, newTheta)] = new_cost_to_come
-            self.costToGo[(newRow, newCol, newTheta)] = new_cost_to_go
-            self.path[(newRow, newCol, newTheta)] = currentNode
+        if(self.IsValid(newX, newY) and self.IsObstacle(newX, newY) == False and self.visited[(int(round(2.0 * newX)), int(round(2.0 * newY)), newTheta)] == False):
+            return (True, newX, newY, newTheta)
+        return (False, newX, newY, newTheta)
+
+    # action move eight
+    def ActionMoveEight(self, currentNode, leftRPM, rightRPM):
+        newX = currRow + self.stepSize * (np.sin((theta - (2 * self.actionTheta)) * (np.pi / 180)) / 0.5)
+        newY = currCol + self.stepSize * (np.cos((theta - (2 * self.actionTheta)) * (np.pi / 180)) / 0.5)
+        newTheta = 0
+
+        if(self.IsValid(newX, newY) and self.IsObstacle(newX, newY) == False and self.visited[(int(round(2.0 * newX)), int(round(2.0 * newY)), newTheta)] == False):
+            return (True, newX, newY, newTheta)
+        return (False, newX, newY, newTheta)
+
+    # update action
+    def UpdateAction(self, currentNode, weight, newX, newY, newTheta):
+        newCostToCome = self.costToCome[currentNode] + weight
+        newCostToGo = self.euc_heuristic(newX, newY)
+        newDistance = newCostToCome + newCostToGo
+
+        if(self.distance.get((newX, newY, newTheta)) == None):
+            self.distance[(newX, newY, newTheta)] = float('inf')                    
+        if(self.distance[(newX, newY, newTheta)] > newDistance):
+            self.distance[(newX, newY, newTheta)] = newDistance
+            self.costToCome[(newX, newY, newTheta)] = newCostToCome
+            self.costToGo[(newX, newY, newTheta)] = newCostToGo
+            self.path[(newX, newY, newTheta)] = currentNode
             return True
         return False
 
@@ -279,9 +311,9 @@ class AStar(object):
         plt.show()
         plt.close()
         
-    # euc heuristic (becomes weighted a-star when weight made greater than 1.0)
-    def euc_heuristic(self, row, col, weight = 1.0):
-        return weight * (np.sqrt(((self.goal[0] - row)**2) + ((self.goal[1] - col)**2)) / 0.5)
+    # eucledian heuristic (becomes weighted a-star when weight made greater than 1.0)
+    def euc_heuristic(self, currX, currY, weight = 1.0):
+        return weight * (np.sqrt(((self.goal[0] - currX) ** 2) + ((self.goal[1] - currY) ** 2)) / 0.5)
     
     # a-star algo
     def search(self):
@@ -311,45 +343,67 @@ class AStar(object):
                 break
                
             # break if steps greater than 5000000
-            if(steps > 5000000):
-                break
+            #if(steps > 5000000):
+            #    break
 
             # traverse the edges
             # action 1
-            (moveOnePossible, newRow, newCol, newTheta) = self.ActionMoveOne(currentNode[0], currentNode[1], currentNode[2])
-            if(moveOnePossible):
-                updateHeap = self.UpdateAction(currentNode, 1, newRow, newCol, newTheta)
-                if(updateHeap):
-                    heappush(queue, (self.distance[(newRow, newCol, newTheta)], self.costToCome[(newRow, newCol, newTheta)], (newRow, newCol, newTheta)))
+            (moveOnePossible, newX, newY, newTheta) = self.ActionMoveOne(currentNode, 0, self.wheelRPM[0])
+            #if(moveOnePossible):
+            #    updateHeap = self.UpdateAction(currentNode, 1, newRow, newCol, newTheta)
+            #    if(updateHeap):
+            #        heappush(queue, (self.distance[(newRow, newCol, newTheta)], self.costToCome[(newRow, newCol, newTheta)], (newRow, newCol, newTheta)))
             
             # action 2
-            (moveTwoPossible, newRow, newCol, newTheta) = self.ActionMoveTwo(currentNode[0], currentNode[1], currentNode[2])
-            if(moveTwoPossible):
-                updateHeap = self.UpdateAction(currentNode, 1.3, newRow, newCol, newTheta)
-                if(updateHeap):
-                    heappush(queue, (self.distance[(newRow, newCol, newTheta)], self.costToCome[(newRow, newCol, newTheta)], (newRow, newCol, newTheta)))
+            (moveTwoPossible, newX, newY, newTheta) = self.ActionMoveTwo(currentNode, self.wheelRPM[0], 0)
+            #if(moveTwoPossible):
+            #    updateHeap = self.UpdateAction(currentNode, 1.3, newRow, newCol, newTheta)
+            #    if(updateHeap):
+            #        heappush(queue, (self.distance[(newRow, newCol, newTheta)], self.costToCome[(newRow, newCol, newTheta)], (newRow, newCol, newTheta)))
                     
             # action 3
-            (moveThreePossible, newRow, newCol, newTheta) = self.ActionMoveThree(currentNode[0], currentNode[1], currentNode[2])
-            if(moveThreePossible):
-                updateHeap = self.UpdateAction(currentNode, 1.9, newRow, newCol, newTheta)
-                if(updateHeap):
-                    heappush(queue, (self.distance[(newRow, newCol, newTheta)], self.costToCome[(newRow, newCol, newTheta)], (newRow, newCol, newTheta)))
+            (moveThreePossible, newX, newY, newTheta) = self.ActionMoveThree(currentNode, self.wheelRPM[0], self.wheelRPM[0])
+            #if(moveThreePossible):
+            #    updateHeap = self.UpdateAction(currentNode, 1.9, newRow, newCol, newTheta)
+            #    if(updateHeap):
+            #        heappush(queue, (self.distance[(newRow, newCol, newTheta)], self.costToCome[(newRow, newCol, newTheta)], (newRow, newCol, newTheta)))
               
             # action 4
-            (moveFourPossible, newRow, newCol, newTheta) = self.ActionMoveFour(currentNode[0], currentNode[1], currentNode[2])      
-            if(moveFourPossible):
-                updateHeap = self.UpdateAction(currentNode, 1.3, newRow, newCol, newTheta)
-                if(updateHeap):
-                    heappush(queue, (self.distance[(newRow, newCol, newTheta)], self.costToCome[(newRow, newCol, newTheta)], (newRow, newCol, newTheta)))
+            (moveFourPossible, newX, newY, newTheta) = self.ActionMoveFour(currentNode, 0, self.wheelRPM[1])      
+            #if(moveFourPossible):
+            #    updateHeap = self.UpdateAction(currentNode, 1.3, newRow, newCol, newTheta)
+            #    if(updateHeap):
+            #        heappush(queue, (self.distance[(newRow, newCol, newTheta)], self.costToCome[(newRow, newCol, newTheta)], (newRow, newCol, newTheta)))
                     
             # action 5
-            (moveFivePossible, newRow, newCol, newTheta) = self.ActionMoveFive(currentNode[0], currentNode[1], currentNode[2])
-            if(moveFivePossible):
-                updateHeap = self.UpdateAction(currentNode, 1.9, newRow, newCol, newTheta)
-                if(updateHeap):
-                    heappush(queue, (self.distance[(newRow, newCol, newTheta)], self.costToCome[(newRow, newCol, newTheta)], (newRow, newCol, newTheta)))
+            (moveFivePossible, newX, newY, newTheta) = self.ActionMoveFive(currentNode, self.wheelRPM[1], 0)
+            #if(moveFivePossible):
+            #    updateHeap = self.UpdateAction(currentNode, 1.9, newRow, newCol, newTheta)
+            #    if(updateHeap):
+            #        heappush(queue, (self.distance[(newRow, newCol, newTheta)], self.costToCome[(newRow, newCol, newTheta)], (newRow, newCol, newTheta)))
+
+            # action 6
+            (moveSixPossible, newX, newY, newTheta) = self.ActionMoveSix(currentNode, self.wheelRPM[1], self.wheelRPM[1])
+            #if(moveSixPossible):
+            #    updateHeap = self.UpdateAction(currentNode, 1.9, newRow, newCol, newTheta)
+            #    if(updateHeap):
+            #        heappush(queue, (self.distance[(newRow, newCol, newTheta)], self.costToCome[(newRow, newCol, newTheta)], (newRow, newCol, newTheta)))
                     
+            # action 7
+            (moveSevenPossible, newX, newY, newTheta) = self.ActionMoveSeven(currentNode, self.wheelRPM[0], self.wheelRPM[1])
+            #if(moveSevenPossible):
+            #    updateHeap = self.UpdateAction(currentNode, 1.9, newRow, newCol, newTheta)
+            #    if(updateHeap):
+            #        heappush(queue, (self.distance[(newRow, newCol, newTheta)], self.costToCome[(newRow, newCol, newTheta)], (newRow, newCol, newTheta)))
+
+            
+            # action 8
+            (moveEightPossible, newX, newY, newTheta) = self.ActionMoveEight(currentNode, self.wheelRPM[1], self.wheelRPM[0])
+            #if(moveEightPossible):
+            #    updateHeap = self.UpdateAction(currentNode, 1.9, newRow, newCol, newTheta)
+            #    if(updateHeap):
+            #        heappush(queue, (self.distance[(newRow, newCol, newTheta)], self.costToCome[(newRow, newCol, newTheta)], (newRow, newCol, newTheta)))  
+
         # return if no optimal path
         if(flag == 0):
             return (exploredStates, [], float('inf'))
