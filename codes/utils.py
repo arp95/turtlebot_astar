@@ -37,14 +37,15 @@ class AStar(object):
     def __init__(self, start, goal, wheelRPM, clearance):
         self.start = start
         self.goal = goal
-        self.xLength = 10.2
-        self.yLength = 10.2
-        self.innerXLength = 10
-        self.innerYLength = 10
+        self.xLength = 300
+        self.yLength = 200
+        self.innerXLength = 300
+        self.innerYLength = 200
         self.wheelRPM = wheelRPM
         self.clearance = clearance + 1
         self.radius = 1
         self.wheelDistance = 1
+        self.wheelRadius = 1
         self.distance = {}
         self.path = {}
         self.costToCome = {}
@@ -53,7 +54,7 @@ class AStar(object):
         
         for x in range(1, 2 * self.innerXLength + 1):
             for y in range(1, 2 * self.innerYLength + 1):
-                for theta in range(0, 360, 10):            
+                for theta in range(0, 360, 1):            
                     self.visited[(x, y, theta)] = False
     
     # move is valid 
@@ -138,83 +139,22 @@ class AStar(object):
             return True
         return False
     
+    # return updated position by taking into account non-holonomic constraint of robot
+    def GetNewPositionOfRobot(self, currentNode, leftRPM, rightRPM):
+        leftWheelVelocity = (6.0 * leftRPM) * self.wheelRadius
+        rightWheelVelocity = (6.0 * rightRPM) * self.wheelRadius
+        dx = (self.wheelRadius / 2.0) * (leftWheelVelocity + rightWheelVelocity) * np.cos(currentNode[2] * (np.pi / 180.0))
+        dy = (self.wheelRadius / 2.0) * (leftWheelVelocity + rightWheelVelocity) * np.sin(currentNode[2] * (np.pi / 180.0))
+        dtheta = (self.wheelRadius / self.wheelDistance) * (rightWheelVelocity - leftWheelVelocity)
+        return (currentNode[0] + (dx / 0.5), currentNode[1] + (dy / 0.5), (currentNode[2] + dtheta) % 360)
+
     # action move one
-    def ActionMoveOne(self, currentNode, leftRPM, rightRPM):
-        newX = 0
-        newY = 0
-        newTheta = 0
+    def ActionMoveRobot(self, currentNode, leftRPM, rightRPM):
+        # update position
+        (newX, newY, newTheta) = self.GetNewPositionOfRobot(currentNode, leftRPM, rightRPM)
 
-        if(self.IsValid(newX, newY) and self.IsObstacle(newX, newY) == False and self.visited[(int(round(2.0 * newX)), int(round(2.0 * newY)), newTheta)] == False):
-            return (True, newX, newY, newTheta)
-        return (False, newX, newY, newTheta)
-
-    # action move two
-    def ActionMoveTwo(self, currentNode, leftRPM, rightRPM):
-        newX = 0
-        newY = 0
-        newTheta = 0
- 
-        if(self.IsValid(newX, newY) and self.IsObstacle(newX, newY) == False and self.visited[(int(round(2.0 * newX)), int(round(2.0 * newY)), newTheta)] == False):
-            return (True, newX, newY, newTheta)
-        return (False, newX, newY, newTheta)
-
-    # action move three
-    def ActionMoveThree(self, currentNode, leftRPM, rightRPM):
-        newX = 0
-        newY = 0
-        newTheta = 0
-
-        if(self.IsValid(newX, newY) and self.IsObstacle(newX, newY) == False and self.visited[(int(round(2.0 * newX)), int(round(2.0 * newY)), newTheta)] == False):
-            return (True, newX, newY, newTheta)
-        return (False, newX, newY, newTheta)
-
-    # action move four
-    def ActionMoveFour(self, currentNode, leftRPM, rightRPM):
-        newX = 0
-        newY = 0
-        newTheta = 0
-
-        if(self.IsValid(newX, newY) and self.IsObstacle(newX, newY) == False and self.visited[(int(round(2.0 * newX)), int(round(2.0 * newY)), newTheta)] == False):
-            return (True, newX, newY, newTheta)
-        return (False, newX, newY, newTheta)
-
-    # action move five
-    def ActionMoveFive(self, currentNode, leftRPM, rightRPM):
-        newX = 0
-        newY = 0
-        newTheta = 0
-
-        if(self.IsValid(newX, newY) and self.IsObstacle(newX, newY) == False and self.visited[(int(round(2.0 * newX)), int(round(2.0 * newY)), newTheta)] == False):
-            return (True, newX, newY, newTheta)
-        return (False, newX, newY, newTheta)
-
-    # action move six
-    def ActionMoveSix(self, currentNode, leftRPM, rightRPM):
-        newX = 0
-        newY = 0
-        newTheta = 0
-
-        if(self.IsValid(newX, newY) and self.IsObstacle(newX, newY) == False and self.visited[(int(round(2.0 * newX)), int(round(2.0 * newY)), newTheta)] == False):
-            return (True, newX, newY, newTheta)
-        return (False, newX, newY, newTheta)
-    
-    # action move seven
-    def ActionMoveSeven(self, currentNode, leftRPM, rightRPM):
-        newX = 0
-        newY = 0
-        newTheta = 0
-
-        if(self.IsValid(newX, newY) and self.IsObstacle(newX, newY) == False and self.visited[(int(round(2.0 * newX)), int(round(2.0 * newY)), newTheta)] == False):
-            return (True, newX, newY, newTheta)
-        return (False, newX, newY, newTheta)
-
-    # action move eight
-    def ActionMoveEight(self, currentNode, leftRPM, rightRPM):
-        newX = currRow + self.stepSize * (np.sin((theta - (2 * self.actionTheta)) * (np.pi / 180)) / 0.5)
-        newY = currCol + self.stepSize * (np.cos((theta - (2 * self.actionTheta)) * (np.pi / 180)) / 0.5)
-        newTheta = 0
-
-        if(self.IsValid(newX, newY) and self.IsObstacle(newX, newY) == False and self.visited[(int(round(2.0 * newX)), int(round(2.0 * newY)), newTheta)] == False):
+        # check obstacle
+        if(self.IsValid(newX, newY) and self.IsObstacle(newX, newY) == False and self.visited[(int(round(2.0 * newX)), int(round(2.0 * newY)), int(round(newTheta)))] == False):
             return (True, newX, newY, newTheta)
         return (False, newX, newY, newTheta)
 
@@ -233,18 +173,6 @@ class AStar(object):
             self.path[(newX, newY, newTheta)] = currentNode
             return True
         return False
-
-    # generate video
-    def generate_video(path):
-        files = glob.glob(str(path) + "/*")
-        files = np.sort(files)
-        fourcc = cv2.VideoWriter_fourcc(*'XVID')
-        out = cv2.VideoWriter("simulation.avi", fourcc, 20.0, (300, 200))
-        for file in files:
-            image = cv2.imread(file)
-            image = cv2.resize(image, (300, 200))
-            out.write(image)
-        out.release()
 
     # animate path
     def animate(self, exploredStates, backtrackStates, path):
@@ -332,7 +260,7 @@ class AStar(object):
         while(len(queue) > 0):
             # get current node
             _, _, currentNode = heappop(queue)
-            self.visited[(int(round(2.0 * currentNode[0])), int(round(2.0 * currentNode[1])), currentNode[2])] = True
+            self.visited[(int(round(2.0 * currentNode[0])), int(round(2.0 * currentNode[1])), int(round(currentNode[2])))] = True
             exploredStates.append(currentNode)
             steps = steps + 1
             
@@ -343,66 +271,66 @@ class AStar(object):
                 break
                
             # break if steps greater than 5000000
-            #if(steps > 5000000):
-            #    break
+            if(steps > 5000000):
+                break
 
             # traverse the edges
             # action 1
-            (moveOnePossible, newX, newY, newTheta) = self.ActionMoveOne(currentNode, 0, self.wheelRPM[0])
-            #if(moveOnePossible):
-            #    updateHeap = self.UpdateAction(currentNode, 1, newRow, newCol, newTheta)
-            #    if(updateHeap):
-            #        heappush(queue, (self.distance[(newRow, newCol, newTheta)], self.costToCome[(newRow, newCol, newTheta)], (newRow, newCol, newTheta)))
+            (moveOnePossible, newX, newY, newTheta) = self.ActionMoveRobot(currentNode, 0, self.wheelRPM[0])
+            if(moveOnePossible):
+                updateHeap = self.UpdateAction(currentNode, 1, newX, newY, newTheta)
+                if(updateHeap):
+                    heappush(queue, (self.distance[(newX, newY, newTheta)], self.costToCome[(newX, newY, newTheta)], (newX, newY, newTheta)))
             
             # action 2
-            (moveTwoPossible, newX, newY, newTheta) = self.ActionMoveTwo(currentNode, self.wheelRPM[0], 0)
-            #if(moveTwoPossible):
-            #    updateHeap = self.UpdateAction(currentNode, 1.3, newRow, newCol, newTheta)
-            #    if(updateHeap):
-            #        heappush(queue, (self.distance[(newRow, newCol, newTheta)], self.costToCome[(newRow, newCol, newTheta)], (newRow, newCol, newTheta)))
+            (moveTwoPossible, newX, newY, newTheta) = self.ActionMoveRobot(currentNode, self.wheelRPM[0], 0)
+            if(moveTwoPossible):
+                updateHeap = self.UpdateAction(currentNode, 1, newX, newY, newTheta)
+                if(updateHeap):
+                    heappush(queue, (self.distance[(newX, newY, newTheta)], self.costToCome[(newX, newY, newTheta)], (newX, newY, newTheta)))
                     
             # action 3
-            (moveThreePossible, newX, newY, newTheta) = self.ActionMoveThree(currentNode, self.wheelRPM[0], self.wheelRPM[0])
-            #if(moveThreePossible):
-            #    updateHeap = self.UpdateAction(currentNode, 1.9, newRow, newCol, newTheta)
-            #    if(updateHeap):
-            #        heappush(queue, (self.distance[(newRow, newCol, newTheta)], self.costToCome[(newRow, newCol, newTheta)], (newRow, newCol, newTheta)))
+            (moveThreePossible, newX, newY, newTheta) = self.ActionMoveRobot(currentNode, self.wheelRPM[0], self.wheelRPM[0])
+            if(moveThreePossible):
+                updateHeap = self.UpdateAction(currentNode, 1.4142, newX, newY, newTheta)
+                if(updateHeap):
+                    heappush(queue, (self.distance[(newX, newY, newTheta)], self.costToCome[(newX, newY, newTheta)], (newX, newY, newTheta)))
               
             # action 4
-            (moveFourPossible, newX, newY, newTheta) = self.ActionMoveFour(currentNode, 0, self.wheelRPM[1])      
-            #if(moveFourPossible):
-            #    updateHeap = self.UpdateAction(currentNode, 1.3, newRow, newCol, newTheta)
-            #    if(updateHeap):
-            #        heappush(queue, (self.distance[(newRow, newCol, newTheta)], self.costToCome[(newRow, newCol, newTheta)], (newRow, newCol, newTheta)))
+            (moveFourPossible, newX, newY, newTheta) = self.ActionMoveRobot(currentNode, 0, self.wheelRPM[1])      
+            if(moveFourPossible):
+                updateHeap = self.UpdateAction(currentNode, 1, newX, newY, newTheta)
+                if(updateHeap):
+                    heappush(queue, (self.distance[(newX, newY, newTheta)], self.costToCome[(newX, newY, newTheta)], (newX, newY, newTheta)))
                     
             # action 5
-            (moveFivePossible, newX, newY, newTheta) = self.ActionMoveFive(currentNode, self.wheelRPM[1], 0)
-            #if(moveFivePossible):
-            #    updateHeap = self.UpdateAction(currentNode, 1.9, newRow, newCol, newTheta)
-            #    if(updateHeap):
-            #        heappush(queue, (self.distance[(newRow, newCol, newTheta)], self.costToCome[(newRow, newCol, newTheta)], (newRow, newCol, newTheta)))
+            (moveFivePossible, newX, newY, newTheta) = self.ActionMoveRobot(currentNode, self.wheelRPM[1], 0)
+            if(moveFivePossible):
+                updateHeap = self.UpdateAction(currentNode, 1, newX, newY, newTheta)
+                if(updateHeap):
+                    heappush(queue, (self.distance[(newX, newY, newTheta)], self.costToCome[(newX, newY, newTheta)], (newX, newY, newTheta)))
 
             # action 6
-            (moveSixPossible, newX, newY, newTheta) = self.ActionMoveSix(currentNode, self.wheelRPM[1], self.wheelRPM[1])
-            #if(moveSixPossible):
-            #    updateHeap = self.UpdateAction(currentNode, 1.9, newRow, newCol, newTheta)
-            #    if(updateHeap):
-            #        heappush(queue, (self.distance[(newRow, newCol, newTheta)], self.costToCome[(newRow, newCol, newTheta)], (newRow, newCol, newTheta)))
+            (moveSixPossible, newX, newY, newTheta) = self.ActionMoveRobot(currentNode, self.wheelRPM[1], self.wheelRPM[1])
+            if(moveSixPossible):
+                updateHeap = self.UpdateAction(currentNode, 1.4142, newX, newY, newTheta)
+                if(updateHeap):
+                    heappush(queue, (self.distance[(newX, newY, newTheta)], self.costToCome[(newX, newY, newTheta)], (newX, newY, newTheta)))
                     
             # action 7
-            (moveSevenPossible, newX, newY, newTheta) = self.ActionMoveSeven(currentNode, self.wheelRPM[0], self.wheelRPM[1])
-            #if(moveSevenPossible):
-            #    updateHeap = self.UpdateAction(currentNode, 1.9, newRow, newCol, newTheta)
-            #    if(updateHeap):
-            #        heappush(queue, (self.distance[(newRow, newCol, newTheta)], self.costToCome[(newRow, newCol, newTheta)], (newRow, newCol, newTheta)))
+            (moveSevenPossible, newX, newY, newTheta) = self.ActionMoveRobot(currentNode, self.wheelRPM[0], self.wheelRPM[1])
+            if(moveSevenPossible):
+                updateHeap = self.UpdateAction(currentNode, 1.5, newX, newY, newTheta)
+                if(updateHeap):
+                    heappush(queue, (self.distance[(newX, newY, newTheta)], self.costToCome[(newX, newY, newTheta)], (newX, newY, newTheta)))
 
             
             # action 8
-            (moveEightPossible, newX, newY, newTheta) = self.ActionMoveEight(currentNode, self.wheelRPM[1], self.wheelRPM[0])
-            #if(moveEightPossible):
-            #    updateHeap = self.UpdateAction(currentNode, 1.9, newRow, newCol, newTheta)
-            #    if(updateHeap):
-            #        heappush(queue, (self.distance[(newRow, newCol, newTheta)], self.costToCome[(newRow, newCol, newTheta)], (newRow, newCol, newTheta)))  
+            (moveEightPossible, newX, newY, newTheta) = self.ActionMoveRobot(currentNode, self.wheelRPM[1], self.wheelRPM[0])
+            if(moveEightPossible):
+                updateHeap = self.UpdateAction(currentNode, 1.5, newX, newY, newTheta)
+                if(updateHeap):
+                    heappush(queue, (self.distance[(newX, newY, newTheta)], self.costToCome[(newX, newY, newTheta)], (newX, newY, newTheta)))
 
         # return if no optimal path
         if(flag == 0):
