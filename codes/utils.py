@@ -159,7 +159,7 @@ class AStar(object):
         return (False, newX, newY, newTheta)
 
     # update action
-    def UpdateAction(self, currentNode, weight, newX, newY, newTheta):
+    def UpdateAction(self, currentNode, weight, newX, newY, newTheta, action):
         newCostToCome = self.costToCome[currentNode] + weight
         newCostToGo = self.euc_heuristic(newX, newY)
         newDistance = newCostToCome + newCostToGo
@@ -170,7 +170,7 @@ class AStar(object):
             self.distance[(newX, newY, newTheta)] = newDistance
             self.costToCome[(newX, newY, newTheta)] = newCostToCome
             self.costToGo[(newX, newY, newTheta)] = newCostToGo
-            self.path[(newX, newY, newTheta)] = currentNode
+            self.path[(newX, newY, newTheta)] = (currentNode, action)
             return True
         return False
 
@@ -278,49 +278,49 @@ class AStar(object):
             # action 1
             (moveOnePossible, newX, newY, newTheta) = self.ActionMoveRobot(currentNode, 0, self.wheelRPM[0])
             if(moveOnePossible):
-                updateHeap = self.UpdateAction(currentNode, 1, newX, newY, newTheta)
+                updateHeap = self.UpdateAction(currentNode, self.wheelRPM[0], newX, newY, newTheta, (0, self.wheelRPM[0]))
                 if(updateHeap):
                     heappush(queue, (self.distance[(newX, newY, newTheta)], self.costToCome[(newX, newY, newTheta)], (newX, newY, newTheta)))
             
             # action 2
             (moveTwoPossible, newX, newY, newTheta) = self.ActionMoveRobot(currentNode, self.wheelRPM[0], 0)
             if(moveTwoPossible):
-                updateHeap = self.UpdateAction(currentNode, 1, newX, newY, newTheta)
+                updateHeap = self.UpdateAction(currentNode, self.wheelRPM[0], newX, newY, newTheta, (self.wheelRPM[0], 0))
                 if(updateHeap):
                     heappush(queue, (self.distance[(newX, newY, newTheta)], self.costToCome[(newX, newY, newTheta)], (newX, newY, newTheta)))
                     
             # action 3
             (moveThreePossible, newX, newY, newTheta) = self.ActionMoveRobot(currentNode, self.wheelRPM[0], self.wheelRPM[0])
             if(moveThreePossible):
-                updateHeap = self.UpdateAction(currentNode, 1.4142, newX, newY, newTheta)
+                updateHeap = self.UpdateAction(currentNode, (self.wheelRPM[0] * 1.4142), newX, newY, newTheta, (self.wheelRPM[0], self.wheelRPM[0]))
                 if(updateHeap):
                     heappush(queue, (self.distance[(newX, newY, newTheta)], self.costToCome[(newX, newY, newTheta)], (newX, newY, newTheta)))
               
             # action 4
             (moveFourPossible, newX, newY, newTheta) = self.ActionMoveRobot(currentNode, 0, self.wheelRPM[1])      
             if(moveFourPossible):
-                updateHeap = self.UpdateAction(currentNode, 1, newX, newY, newTheta)
+                updateHeap = self.UpdateAction(currentNode, self.wheelRPM[1], newX, newY, newTheta, (0, self.wheelRPM[1]))
                 if(updateHeap):
                     heappush(queue, (self.distance[(newX, newY, newTheta)], self.costToCome[(newX, newY, newTheta)], (newX, newY, newTheta)))
                     
             # action 5
             (moveFivePossible, newX, newY, newTheta) = self.ActionMoveRobot(currentNode, self.wheelRPM[1], 0)
             if(moveFivePossible):
-                updateHeap = self.UpdateAction(currentNode, 1, newX, newY, newTheta)
+                updateHeap = self.UpdateAction(currentNode, self.wheelRPM[1], newX, newY, newTheta, (self.wheelRPM[1], 0))
                 if(updateHeap):
                     heappush(queue, (self.distance[(newX, newY, newTheta)], self.costToCome[(newX, newY, newTheta)], (newX, newY, newTheta)))
 
             # action 6
             (moveSixPossible, newX, newY, newTheta) = self.ActionMoveRobot(currentNode, self.wheelRPM[1], self.wheelRPM[1])
             if(moveSixPossible):
-                updateHeap = self.UpdateAction(currentNode, 1.4142, newX, newY, newTheta)
+                updateHeap = self.UpdateAction(currentNode, (self.wheelRPM[1] * 1.4142), newX, newY, newTheta, (self.wheelRPM[1], self.wheelRPM[1]))
                 if(updateHeap):
                     heappush(queue, (self.distance[(newX, newY, newTheta)], self.costToCome[(newX, newY, newTheta)], (newX, newY, newTheta)))
                     
             # action 7
             (moveSevenPossible, newX, newY, newTheta) = self.ActionMoveRobot(currentNode, self.wheelRPM[0], self.wheelRPM[1])
             if(moveSevenPossible):
-                updateHeap = self.UpdateAction(currentNode, 1.5, newX, newY, newTheta)
+                updateHeap = self.UpdateAction(currentNode, max((self.wheelRPM[0] * 1.4142), (self.wheelRPM[1] * 1.4142)), newX, newY, newTheta, (self.wheelRPM[0], self.wheelRPM[1]))
                 if(updateHeap):
                     heappush(queue, (self.distance[(newX, newY, newTheta)], self.costToCome[(newX, newY, newTheta)], (newX, newY, newTheta)))
 
@@ -328,7 +328,7 @@ class AStar(object):
             # action 8
             (moveEightPossible, newX, newY, newTheta) = self.ActionMoveRobot(currentNode, self.wheelRPM[1], self.wheelRPM[0])
             if(moveEightPossible):
-                updateHeap = self.UpdateAction(currentNode, 1.5, newX, newY, newTheta)
+                updateHeap = self.UpdateAction(currentNode, max((self.wheelRPM[0] * 1.4142), (self.wheelRPM[1] * 1.4142)), newX, newY, newTheta, (self.wheelRPM[1], self.wheelRPM[0]))
                 if(updateHeap):
                     heappush(queue, (self.distance[(newX, newY, newTheta)], self.costToCome[(newX, newY, newTheta)], (newX, newY, newTheta)))
 
@@ -338,10 +338,16 @@ class AStar(object):
         
         # backtrack path
         backtrackStates = []
+        actions = []
         node = backtrackNode
+        action = None
         while(node != self.start):
             backtrackStates.append(node)
-            node = self.path[node]
+            if(action != None):
+                actions.append(action)
+            node, action = self.path[node]
         backtrackStates.append(self.start)
-        backtrackStates = list(reversed(backtrackStates))      
-        return (exploredStates, backtrackStates, self.distance[backtrackNode])
+        actions.append(action)
+        backtrackStates = list(reversed(backtrackStates))  
+        actions = list(reversed(actions))    
+        return (exploredStates, backtrackStates, actions, self.distance[backtrackNode])
