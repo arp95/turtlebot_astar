@@ -29,7 +29,70 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
 from heapq import heappush, heappop
+import rospy
+from tf.transformations import euler_from_quaternion
+from geometry_msgs.msg import Point, Twist, PoseStamped
+from math import pow, atan2, sqrt
+from nav_msgs.msg import Odometry
 
+
+# global variables
+x = 2.0
+y = 2.0
+theta = 0.0
+
+# callback for subscriber
+def callback(msg):
+    global x 
+    global y
+    global theta
+    
+    x = msg.pose.pose.position.x
+    y = msg.pose.pose.position.y
+    rot_q = msg.pose.pose.orientation
+    (roll, pitch, theta) = euler_from_quaternion([rot_q.x, rot_q.y, rot_q.z, rot_q.w])
+
+# function to set initial point
+def set_initial_point(robot_x, robot_y, robot_theta):
+    global x
+    global y
+    global theta
+    
+    x = robot_x
+    y = robot_y
+    theta = robot_theta
+    
+# function to set goal point
+def go_to_point(robot_x, robot_y, pub_vel):
+    global x
+    global y
+    global theta
+    
+    r = rospy.Rate(4)
+    goal = Point()
+    vel_value = Twist()
+    goal.x = robot_x
+    goal.y = robot_y
+    
+    while not rospy.is_shutdown():
+        inc_x = goal.x - x
+        inc_y = goal.y - y
+        angle_to_goal = atan2(inc_y, inc_x)
+ 
+        if abs(angle_to_goal - theta) > 0.1:
+            vel_value.linear.x = 0
+            vel_value.angular.z = 0.25
+        else:
+            vel_value.linear.x = 0.25
+            vel_value.angular.z = 0
+     
+        if(inc_x < 0.01 and inc_y < 0.01):
+            vel_value.linear.x = 0
+            vel_value.angular.z = 0
+            pub_vel.publish(vel_value)
+            break
+        pub_vel.publish(vel_value)
+        r.sleep()
 
 # class for AStar
 class AStar(object):

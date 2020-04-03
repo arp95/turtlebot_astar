@@ -23,35 +23,11 @@
  *  DEALINGS IN THE SOFTWARE.
 """
 
+
 # header files
 from utils import *
 import sys
-import rospy
-from geometry_msgs.msg import Point, Twist
-from math import pow, atan2, sqrt
-from nav_msgs.msg import Odometry
 
-# global variables
-x = 0.0
-y = 0.0
-theta = 0.0
-
-# callback for subscriber
-def callback(msg):
-    global x 
-    global y
-    global theta
-    
-    x = msg.pose.pose.position.x
-    y = msg.pose.pose.position.y
-    rot_q = msg.pose.pose.orientation
-
-# ROS node initialisation
-rospy.init_node('turtlebot_astar')
-sub = rospy.Subscriber('/odom', Odometry, callback)
-pub = rospy.Publisher('cmd_vel_mux/input/navi', Twist, queue_size=10)
-r = rospy.Rate(4)
-speed = Twist()
 
 # input from user
 startX = float(input("Enter the x-coordinate for start node : "))
@@ -62,6 +38,12 @@ goalY = float(input("Enter the y-coordinate for goal node : "))
 firstRPM = float(input("Enter the first value of RPM : "))
 secondRPM = float(input("Enter the second value of RPM : "))
 clearance = float(input("Enter the clearance of the rigid robot : "))
+
+# ROS node initialisation
+rospy.init_node('turtlebot_astar')
+sub_odom = rospy.Subscriber('/odom', Odometry, callback)
+pub_vel = rospy.Publisher('cmd_vel_mux/input/navi', Twist, queue_size=10)
+r = rospy.Rate(4)
 
 # take start and goal node as input
 start = (startX, startY, startOrientation)
@@ -77,13 +59,13 @@ if(astar.IsValid(start[0], start[1])):
 
                 
                 # move turtlebot
-                x, y, theta = backtrack_states
-                while not rospy.is_shutdown():
-                    speed.linear.x = 0.1
-                    speed.angular.z = 0.0
-                    pub.publish(move_cmd)
-                    r.sleep()
-                    break
+                #x, y, theta = backtrack_states
+                #while not rospy.is_shutdown():
+                #    speed.linear.x = 0.1
+                #    speed.angular.z = 0.0
+                #    pub.publish(move_cmd)
+                #    r.sleep()
+                #    break
 
 
                 # print optimal path found or not
