@@ -37,12 +37,10 @@ class AStar(object):
     def __init__(self, start, goal, wheelRPM, clearance):
         self.start = start
         self.goal = goal
-        self.xLength = 300
-        self.yLength = 200
-        self.innerXLength = 300
-        self.innerYLength = 200
+        self.xLength = 5
+        self.yLength = 5
         self.wheelRPM = wheelRPM
-        self.clearance = clearance + 1
+        self.clearance = clearance + 0.25
         self.radius = 1
         self.wheelDistance = 1
         self.wheelRadius = 1
@@ -52,14 +50,14 @@ class AStar(object):
         self.costToGo = {}
         self.visited = {}
         
-        for x in range(1, 2 * self.innerXLength + 1):
-            for y in range(1, 2 * self.innerYLength + 1):
+        for x in range(-2 * self.xLength, 2 * self.xLength + 1):
+            for y in range(-2 * self.yLength, 2 * self.yLength + 1):
                 for theta in range(0, 360, 1):            
                     self.visited[(x, y, theta)] = False
     
     # move is valid 
     def IsValid(self, currX, currY):
-        return (currX >= (self.radius + self.clearance) and currX <= (self.innerXLength - self.radius - self.clearance) and currY >= (self.radius + self.clearance) and currY <= (self.innerYLength - self.radius - self.clearance))
+        return (currX >= (self.radius + self.clearance) and currX <= (self.xLength - self.radius - self.clearance) and currY >= (self.radius + self.clearance) and currY <= (self.yLength - self.radius - self.clearance))
 
     # checks for an obstacle
     def IsObstacle(self, row, col):
@@ -67,38 +65,20 @@ class AStar(object):
         sum_of_c_and_r = self.clearance + self.radius
         sqrt_of_c_and_r = 1.4142 * sum_of_c_and_r
         
-        # check circle
-        dist1 = ((row - 150) * (row - 150) + (col - 225) * (col - 225)) - ((25 + sum_of_c_and_r) * (25 + sum_of_c_and_r))
+        # check circles
+        dist1 = ((row - 2.0) * (row - 2.0) + (col - 3.0) * (col - 3.0)) - ((1 + sum_of_c_and_r) * (1 + sum_of_c_and_r))
+
+        dist2 = ((row + 2.0) * (row + 2.0) + (col - 3.0) * (col - 3.0)) - ((1 + sum_of_c_and_r) * (1 + sum_of_c_and_r))
+
+        dist3 = ((row + 2.0) * (row + 2.0) + (col + 3.0) * (col + 3.0)) - ((1 + sum_of_c_and_r) * (1 + sum_of_c_and_r))
+
+        dist4 = ((row) * (row) + (col) * (col)) - ((1 + sum_of_c_and_r) * (1 + sum_of_c_and_r))
         
-        # check eclipse
-        dist2 = ((((row - 100) * (row - 100)) / ((20 + sum_of_c_and_r) * (20 + sum_of_c_and_r))) + (((col - 150) * (col - 150)) / ((40 + sum_of_c_and_r) * (40 + sum_of_c_and_r)))) - 1
-        
-        # check triangles
-        (x1, y1) = (120 - (2.62 * sum_of_c_and_r), 20 - (1.205 * sum_of_c_and_r))
-        (x2, y2) = (150 - sqrt_of_c_and_r, 50)
-        (x3, y3) = (185 + sum_of_c_and_r, 25 - (sum_of_c_and_r * 0.9247))
-        first = ((col - y1) * (x2 - x1)) - ((y2 - y1) * (row - x1))
-        second = ((col - y2) * (x3 - x2)) - ((y3 - y2) * (row - x2))
-        third = ((col - y3) * (x1 - x3)) - ((y1 - y3) * (row - x3))
-        dist3 = 1
-        if(first <= 0 and second <= 0 and third <= 0):
-            dist3 = 0
-            
-        (x1, y1) = (150 - sqrt_of_c_and_r, 50)
-        (x2, y2) = (185 + sum_of_c_and_r, 25 - (sum_of_c_and_r * 0.9247))
-        (x3, y3) = (185 + sum_of_c_and_r, 75 + (sum_of_c_and_r * 0.714))
-        first = ((col - y1) * (x2 - x1)) - ((y2 - y1) * (row - x1))
-        second = ((col - y2) * (x3 - x2)) - ((y3 - y2) * (row - x2))
-        third = ((col - y3) * (x1 - x3)) - ((y1 - y3) * (row - x3))
-        dist4 = 1
-        if(first >= 0 and second >= 0 and third >= 0):
-            dist4 = 0
-        
-        # check rhombus
-        (x1, y1) = (10 - sqrt_of_c_and_r, 225)
-        (x2, y2) = (25, 200 - sqrt_of_c_and_r)
-        (x3, y3) = (40 + sqrt_of_c_and_r, 225)
-        (x4, y4) = (25, 250 + sqrt_of_c_and_r)
+        # check square
+        (x1, y1) = (3.5 - sqrt_of_c_and_r, -0.5 - sqrt_of_c_and_r)
+        (x2, y2) = (3.5 - sqrt_of_c_and_r, 0.5 + sqrt_of_c_and_r)
+        (x3, y3) = (4.5 + sqrt_of_c_and_r, 0.5 + sqrt_of_c_and_r)
+        (x4, y4) = (4.5 + sqrt_of_c_and_r, -0.5 - sqrt_of_c_and_r)
         first = ((col - y1) * (x2 - x1)) - ((y2 - y1) * (row - x1))
         second = ((col - y2) * (x3 - x2)) - ((y3 - y2) * (row - x2))
         third = ((col - y3) * (x4 - x3)) - ((y4 - y3) * (row - x3))
@@ -110,10 +90,10 @@ class AStar(object):
             dist6 = 0
         
         # check square
-        (x1, y1) = (150 - sqrt_of_c_and_r, 50)
-        (x2, y2) = (120 - sqrt_of_c_and_r, 75)
-        (x3, y3) = (150, 100 + sqrt_of_c_and_r)
-        (x4, y4) = (185 + sum_of_c_and_r, 75 + (sum_of_c_and_r * 0.714))
+        (x1, y1) = (-3.5 + sqrt_of_c_and_r, -0.5 - sqrt_of_c_and_r)
+        (x2, y2) = (-3.5 + sqrt_of_c_and_r, 0.5 + sqrt_of_c_and_r)
+        (x3, y3) = (-4.5 - sqrt_of_c_and_r, 0.5 + sqrt_of_c_and_r)
+        (x4, y4) = (-4.5 - sqrt_of_c_and_r, -0.5 - sqrt_of_c_and_r)
         first = ((col - y1) * (x2 - x1)) - ((y2 - y1) * (row - x1))
         second = ((col - y2) * (x3 - x2)) - ((y3 - y2) * (row - x2))
         third = ((col - y3) * (x4 - x3)) - ((y4 - y3) * (row - x3))
@@ -123,19 +103,23 @@ class AStar(object):
         if(first <= 0 and second <= 0 and third <= 0 and fourth <= 0):
             dist7 = 0
             dist8 = 0
-        
-        # check rod
-        first = ((col - 95) * (8.66 + sqrt_of_c_and_r)) - ((5 + sqrt_of_c_and_r) * (row - 30 + sqrt_of_c_and_r))
-        second = ((col - 95) * (37.5 + sqrt_of_c_and_r)) - ((-64.95 - sqrt_of_c_and_r) * (row - 30 + sqrt_of_c_and_r))
-        third = ((col - 30.05 + sqrt_of_c_and_r) * (8.65 + sqrt_of_c_and_r)) - ((5.45 + sqrt_of_c_and_r) * (row - 67.5))
-        fourth = ((col - 35.5) * (-37.49 - sqrt_of_c_and_r)) - ((64.5 + sqrt_of_c_and_r) * (row - 76.15 - sqrt_of_c_and_r))
+
+        # check square
+        (x1, y1) = (1.5 - sqrt_of_c_and_r, -3.5 - sqrt_of_c_and_r)
+        (x2, y2) = (1.5 - sqrt_of_c_and_r, -2.5 + sqrt_of_c_and_r)
+        (x3, y3) = (2.5 + sqrt_of_c_and_r, -2.5 + sqrt_of_c_and_r)
+        (x4, y4) = (2.5 + sqrt_of_c_and_r, -3.5 - sqrt_of_c_and_r)
+        first = ((col - y1) * (x2 - x1)) - ((y2 - y1) * (row - x1))
+        second = ((col - y2) * (x3 - x2)) - ((y3 - y2) * (row - x2))
+        third = ((col - y3) * (x4 - x3)) - ((y4 - y3) * (row - x3))
+        fourth = ((col - y4) * (x1 - x4)) - ((y1 - y4) * (row - x4))
         dist9 = 1
         dist10 = 1
-        if(first <= 0 and second >= 0 and third >= 0 and fourth >= 0):
+        if(first >= 0 and second >= 0 and third >= 0 and fourth >= 0):
             dist9 = 0
             dist10 = 0
         
-        if(dist1 <= 0 or dist2 <= 0 or dist3 == 0 or dist4 == 0 or dist5 == 0 or dist6 == 0 or dist7 == 0 or dist8 == 0 or dist9 == 0 or dist10 == 0):
+        if(dist1 <= 0 or dist2 <= 0 or dist3 <= 0 or dist4 <= 0 or dist5 == 0 or dist6 == 0 or dist7 == 0 or dist8 == 0 or dist9 == 0 or dist10 == 0):
             return True
         return False
     
@@ -189,8 +173,8 @@ class AStar(object):
         plt.ylabel("y-coordinate")
         plt.grid()
         ax.set_aspect('equal')
-        plt.xlim(0, 300)
-        plt.ylim(0, 200)
+        plt.xlim(-5, 5)
+        plt.ylim(-5, 5)
         count = 0
         
         # obstacle space
