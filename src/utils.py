@@ -114,6 +114,7 @@ class AStar(object):
         self.costToCome = {}
         self.costToGo = {}
         self.visited = {}
+        self.hashMap = {}
         
         for val1 in range(-self.gridSize * self.xLength, self.gridSize * self.xLength + 1):
             for val2 in range(-self.gridSize * self.yLength, self.gridSize * self.yLength + 1):
@@ -210,13 +211,16 @@ class AStar(object):
             
             if(self.IsValid(x, y) == False or self.IsObstacle(x, y)):
                 flag = False
+        if(self.hashMap.get(int(int(x * 1000) + int(y * 1))) != None):
+            flag = False
         return (x, y, theta, cost, dvx, dvy, w, flag)
 
     # action move
     def ActionMoveRobot(self, currentNode, leftRPM, rightRPM):
         # update position
         (newX, newY, newTheta, cost, dvx, dvy, dw, flag) = self.GetNewPositionOfRobot(currentNode, leftRPM, rightRPM)
-
+        self.hashMap[int(int(newX * 1000) + int(newY * 1))] = 1
+        
         # check obstacle
         if(flag == True and self.IsValid(newX, newY) and self.IsObstacle(newX, newY) == False and self.visited[(int(round(self.gridSize * newX)), int(round(self.gridSize * newY)))] == False):
             return (True, newX, newY, newTheta, dvx, dvy, dw, cost)
@@ -239,7 +243,7 @@ class AStar(object):
         return False
         
     # eucledian heuristic (becomes weighted a-star when weight made greater than 1.0)
-    def euc_heuristic(self, currX, currY, weight = 1.0):
+    def euc_heuristic(self, currX, currY, weight = 3.0):
         return weight * (np.sqrt(self.gridSize * ((self.goal[0] - currX) ** 2) + ((self.goal[1] - currY) ** 2)))
     
     # a-star algo
@@ -260,6 +264,7 @@ class AStar(object):
             # get current node
             _, _, currentNode = heappop(queue)
             self.visited[(int(round(self.gridSize * currentNode[0])), int(round(self.gridSize * currentNode[1])))] = True   
+            self.hashMap[int(int(currentNode[0] * 1000) + int(currentNode[1] * 1))] = 1
             exploredStates.append(currentNode)
             steps = steps + 1
             
