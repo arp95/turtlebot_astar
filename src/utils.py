@@ -26,6 +26,7 @@
 
 # header files
 import numpy as np
+import math
 import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
 from heapq import heappush, heappop
@@ -37,36 +38,36 @@ from nav_msgs.msg import Odometry
 
 
 # global variables
-x = 2.0
-y = 2.0
-theta = 0.0
+x = 0.0
+y = 0.0
+angle = 0.0
 
 # callback for subscriber
 def callback(msg):
     global x 
     global y
-    global theta
+    global angle
     
     x = msg.pose.pose.position.x
     y = msg.pose.pose.position.y
     rot_q = msg.pose.pose.orientation
-    (roll, pitch, theta) = euler_from_quaternion([rot_q.x, rot_q.y, rot_q.z, rot_q.w])
+    (roll, pitch, angle) = euler_from_quaternion([rot_q.x, rot_q.y, rot_q.z, rot_q.w])
 
 # function to set initial point
 def set_initial_point(robot_x, robot_y, robot_theta):
     global x
     global y
-    global theta
+    global angle
     
     x = robot_x
     y = robot_y
-    theta = robot_theta
+    angle = robot_theta
     
 # function to set goal point
 def go_to_point(robot_x, robot_y, pub_vel):
     global x
     global y
-    global theta
+    global angle
     
     r = rospy.Rate(4)
     goal = Point()
@@ -79,7 +80,7 @@ def go_to_point(robot_x, robot_y, pub_vel):
         inc_y = goal.y - y
         angle_to_goal = atan2(inc_y, inc_x)
  
-        if abs(angle_to_goal - theta) > 0.1:
+        if abs(angle_to_goal - angle) > 0.1:
             vel_value.linear.x = 0
             vel_value.angular.z = 0.25
         else:
@@ -100,27 +101,27 @@ class AStar(object):
     def __init__(self, start, goal, wheelRPM, clearance):
         self.start = start
         self.goal = goal
-        self.xLength = 5
-        self.yLength = 5
+        self.xLength = 500
+        self.yLength = 500
         self.wheelRPM = wheelRPM
-        self.clearance = clearance + 0.25
-        self.radius = 1
-        self.wheelDistance = 1
-        self.wheelRadius = 1
+        self.clearance = min(clearance + 5, 10)
+        self.radius = 22.0
+        self.wheelDistance = 29.0
+        self.wheelRadius = 3.3
+        self.gridSize = 1
         self.distance = {}
         self.path = {}
         self.costToCome = {}
         self.costToGo = {}
         self.visited = {}
         
-        for x in range(-2 * self.xLength, 2 * self.xLength + 1):
-            for y in range(-2 * self.yLength, 2 * self.yLength + 1):
-                for theta in range(0, 360, 1):            
-                    self.visited[(x, y, theta)] = False
+        for val1 in range(-self.gridSize * self.xLength, self.gridSize * self.xLength + 1):
+            for val2 in range(-self.gridSize * self.yLength, self.gridSize * self.yLength + 1):
+                self.visited[(val1, val2)] = False
     
     # move is valid 
     def IsValid(self, currX, currY):
-        return (currX >= (self.radius + self.clearance) and currX <= (self.xLength - self.radius - self.clearance) and currY >= (self.radius + self.clearance) and currY <= (self.yLength - self.radius - self.clearance))
+        return (currX >= (-self.xLength + self.radius + self.clearance) and currX <= (self.xLength - self.radius - self.clearance) and currY >= (-self.yLength + self.radius + self.clearance) and currY <= (self.yLength - self.radius - self.clearance))
 
     # checks for an obstacle
     def IsObstacle(self, row, col):
@@ -129,56 +130,53 @@ class AStar(object):
         sqrt_of_c_and_r = 1.4142 * sum_of_c_and_r
         
         # check circles
-        dist1 = ((row - 2.0) * (row - 2.0) + (col - 3.0) * (col - 3.0)) - ((1 + sum_of_c_and_r) * (1 + sum_of_c_and_r))
-
-        dist2 = ((row + 2.0) * (row + 2.0) + (col - 3.0) * (col - 3.0)) - ((1 + sum_of_c_and_r) * (1 + sum_of_c_and_r))
-
-        dist3 = ((row + 2.0) * (row + 2.0) + (col + 3.0) * (col + 3.0)) - ((1 + sum_of_c_and_r) * (1 + sum_of_c_and_r))
-
-        dist4 = ((row) * (row) + (col) * (col)) - ((1 + sum_of_c_and_r) * (1 + sum_of_c_and_r))
+        dist1 = ((row - 200.0) * (row - 200.0) + (col - 300.0) * (col - 300.0)) - ((100 + sum_of_c_and_r) * (100 + sum_of_c_and_r))
+        dist2 = ((row + 200.0) * (row + 200.0) + (col - 300.0) * (col - 300.0)) - ((100 + sum_of_c_and_r) * (100 + sum_of_c_and_r))
+        dist3 = ((row + 200.0) * (row + 200.0) + (col + 300.0) * (col + 300.0)) - ((100 + sum_of_c_and_r) * (100 + sum_of_c_and_r))
+        dist4 = ((row) * (row) + (col) * (col)) - ((100 + sum_of_c_and_r) * (100 + sum_of_c_and_r))
         
         # check square
-        (x1, y1) = (3.5 - sqrt_of_c_and_r, -0.5 - sqrt_of_c_and_r)
-        (x2, y2) = (3.5 - sqrt_of_c_and_r, 0.5 + sqrt_of_c_and_r)
-        (x3, y3) = (4.5 + sqrt_of_c_and_r, 0.5 + sqrt_of_c_and_r)
-        (x4, y4) = (4.5 + sqrt_of_c_and_r, -0.5 - sqrt_of_c_and_r)
+        (x1, y1) = (325 - sqrt_of_c_and_r, -75 - sqrt_of_c_and_r)
+        (x2, y2) = (325 - sqrt_of_c_and_r, 75 + sqrt_of_c_and_r)
+        (x3, y3) = (475 + sqrt_of_c_and_r, 75 + sqrt_of_c_and_r)
+        (x4, y4) = (475 + sqrt_of_c_and_r, -75 - sqrt_of_c_and_r)
         first = ((col - y1) * (x2 - x1)) - ((y2 - y1) * (row - x1))
         second = ((col - y2) * (x3 - x2)) - ((y3 - y2) * (row - x2))
         third = ((col - y3) * (x4 - x3)) - ((y4 - y3) * (row - x3))
         fourth = ((col - y4) * (x1 - x4)) - ((y1 - y4) * (row - x4))
         dist5 = 1
         dist6 = 1
-        if(first >= 0 and second >= 0 and third >= 0 and fourth >= 0):
+        if(first <= 0 and second <= 0 and third <= 0 and fourth <= 0):
             dist5 = 0
             dist6 = 0
         
         # check square
-        (x1, y1) = (-3.5 + sqrt_of_c_and_r, -0.5 - sqrt_of_c_and_r)
-        (x2, y2) = (-3.5 + sqrt_of_c_and_r, 0.5 + sqrt_of_c_and_r)
-        (x3, y3) = (-4.5 - sqrt_of_c_and_r, 0.5 + sqrt_of_c_and_r)
-        (x4, y4) = (-4.5 - sqrt_of_c_and_r, -0.5 - sqrt_of_c_and_r)
+        (x1, y1) = (-325 + sqrt_of_c_and_r, -75 - sqrt_of_c_and_r)
+        (x2, y2) = (-325 + sqrt_of_c_and_r, 75 + sqrt_of_c_and_r)
+        (x3, y3) = (-475 - sqrt_of_c_and_r, 75 + sqrt_of_c_and_r)
+        (x4, y4) = (-475 - sqrt_of_c_and_r, -75 - sqrt_of_c_and_r)
         first = ((col - y1) * (x2 - x1)) - ((y2 - y1) * (row - x1))
         second = ((col - y2) * (x3 - x2)) - ((y3 - y2) * (row - x2))
         third = ((col - y3) * (x4 - x3)) - ((y4 - y3) * (row - x3))
         fourth = ((col - y4) * (x1 - x4)) - ((y1 - y4) * (row - x4))
         dist7 = 1
         dist8 = 1
-        if(first <= 0 and second <= 0 and third <= 0 and fourth <= 0):
+        if(first >= 0 and second >= 0 and third >= 0 and fourth >= 0):
             dist7 = 0
             dist8 = 0
 
         # check square
-        (x1, y1) = (1.5 - sqrt_of_c_and_r, -3.5 - sqrt_of_c_and_r)
-        (x2, y2) = (1.5 - sqrt_of_c_and_r, -2.5 + sqrt_of_c_and_r)
-        (x3, y3) = (2.5 + sqrt_of_c_and_r, -2.5 + sqrt_of_c_and_r)
-        (x4, y4) = (2.5 + sqrt_of_c_and_r, -3.5 - sqrt_of_c_and_r)
+        (x1, y1) = (125 - sqrt_of_c_and_r, -375 - sqrt_of_c_and_r)
+        (x2, y2) = (125 - sqrt_of_c_and_r, -225 + sqrt_of_c_and_r)
+        (x3, y3) = (275 + sqrt_of_c_and_r, -225 + sqrt_of_c_and_r)
+        (x4, y4) = (275 + sqrt_of_c_and_r, -375 - sqrt_of_c_and_r)
         first = ((col - y1) * (x2 - x1)) - ((y2 - y1) * (row - x1))
         second = ((col - y2) * (x3 - x2)) - ((y3 - y2) * (row - x2))
         third = ((col - y3) * (x4 - x3)) - ((y4 - y3) * (row - x3))
         fourth = ((col - y4) * (x1 - x4)) - ((y1 - y4) * (row - x4))
         dist9 = 1
         dist10 = 1
-        if(first >= 0 and second >= 0 and third >= 0 and fourth >= 0):
+        if(first <= 0 and second <= 0 and third <= 0 and fourth <= 0):
             dist9 = 0
             dist10 = 0
         
@@ -188,28 +186,47 @@ class AStar(object):
     
     # return updated position by taking into account non-holonomic constraint of robot
     def GetNewPositionOfRobot(self, currentNode, leftRPM, rightRPM):
-        leftWheelVelocity = (6.0 * leftRPM) * self.wheelRadius
-        rightWheelVelocity = (6.0 * rightRPM) * self.wheelRadius
-        dx = (self.wheelRadius / 2.0) * (leftWheelVelocity + rightWheelVelocity) * np.cos(currentNode[2] * (np.pi / 180.0))
-        dy = (self.wheelRadius / 2.0) * (leftWheelVelocity + rightWheelVelocity) * np.sin(currentNode[2] * (np.pi / 180.0))
-        dtheta = (self.wheelRadius / self.wheelDistance) * (rightWheelVelocity - leftWheelVelocity)
-        return (currentNode[0] + (dx / 0.5), currentNode[1] + (dy / 0.5), (currentNode[2] + dtheta) % 360)
+        leftAngularVelocity = leftRPM * 2 * np.pi / 60.0
+        rightAngularVelocity = rightRPM * 2 * np.pi / 60.0
+        x = currentNode[0]
+        y = currentNode[1]
+        theta = currentNode[2]
+        dx = 0
+        dy = 0
+        dtheta = 0
+        cost = 0
+        flag = True
+        w = (self.wheelRadius / self.wheelDistance) * (rightAngularVelocity - leftAngularVelocity)
+        for index in range(0, 100):
+            dvx = self.wheelRadius * 0.5 * (leftAngularVelocity + rightAngularVelocity) * math.cos(theta)
+            dvy = self.wheelRadius * 0.5 * (leftAngularVelocity + rightAngularVelocity) * math.sin(theta)
+            dx = dvx / 100
+            dy = dvy / 100
+            dtheta = w / 100
+            x = x + dx
+            y = y + dy
+            theta = theta + dtheta
+            cost = cost + np.sqrt(dx ** 2 + dy ** 2)
+            
+            if(self.IsValid(x, y) == False or self.IsObstacle(x, y)):
+                flag = False
+        return (x, y, theta, cost, dvx, dvy, w, flag)
 
-    # action move one
+    # action move
     def ActionMoveRobot(self, currentNode, leftRPM, rightRPM):
         # update position
-        (newX, newY, newTheta) = self.GetNewPositionOfRobot(currentNode, leftRPM, rightRPM)
+        (newX, newY, newTheta, cost, dvx, dvy, dw, flag) = self.GetNewPositionOfRobot(currentNode, leftRPM, rightRPM)
 
         # check obstacle
-        if(self.IsValid(newX, newY) and self.IsObstacle(newX, newY) == False and self.visited[(int(round(2.0 * newX)), int(round(2.0 * newY)), int(round(newTheta)))] == False):
-            return (True, newX, newY, newTheta)
-        return (False, newX, newY, newTheta)
+        if(flag == True and self.IsValid(newX, newY) and self.IsObstacle(newX, newY) == False and self.visited[(int(round(self.gridSize * newX)), int(round(self.gridSize * newY)))] == False):
+            return (True, newX, newY, newTheta, dvx, dvy, dw, cost)
+        return (False, newX, newY, newTheta, dvx, dvy, dw, cost)
 
     # update action
-    def UpdateAction(self, currentNode, weight, newX, newY, newTheta, action):
+    def UpdateAction(self, currentNode, weight, newX, newY, newTheta, action, cost):
         newCostToCome = self.costToCome[currentNode] + weight
         newCostToGo = self.euc_heuristic(newX, newY)
-        newDistance = newCostToCome + newCostToGo
+        newDistance = newCostToCome + newCostToGo + cost
 
         if(self.distance.get((newX, newY, newTheta)) == None):
             self.distance[(newX, newY, newTheta)] = float('inf')                    
@@ -220,75 +237,10 @@ class AStar(object):
             self.path[(newX, newY, newTheta)] = (currentNode, action)
             return True
         return False
-
-    # animate path
-    def animate(self, exploredStates, backtrackStates, path):
-        startX = []
-        startY = []
-        endX = []
-        endY = []
-        explored_startX = []
-        explored_startY = []
-        explored_endX = []
-        explored_endY = []
-        fig, ax = plt.subplots()
-        plt.xlabel("x-coordinate")
-        plt.ylabel("y-coordinate")
-        plt.grid()
-        ax.set_aspect('equal')
-        plt.xlim(-5, 5)
-        plt.ylim(-5, 5)
-        count = 0
-        
-        # obstacle space
-        obstacleX = []
-        obstacleY = []
-        size = []
-        for index1 in range(0, 300):
-            for index2 in range(0, 200):
-                if(self.IsObstacle(index2/0.5, index1/0.5)):
-                    obstacleX.append(index1/0.5)
-                    obstacleY.append(index2/0.5)     
-                    size.append(15)      
-        obstacleX = np.array(obstacleX)
-        obstacleY = np.array(obstacleY)
-        plt.scatter(obstacleX, obstacleY, color='b', s=size)
-
-        # explore node space
-        for index in range(1, len(exploredStates)):
-            parentNode = self.path[exploredStates[index]]
-            explored_startX.append(parentNode[1])
-            explored_startY.append(parentNode[0])
-            explored_endX.append(exploredStates[index][1] - parentNode[1])
-            explored_endY.append(exploredStates[index][0] - parentNode[0])    
-            #if(count % 500 == 0 or (index > 11000 and index % 100 == 0) or index > 12600):
-            #    plt.quiver(np.array((explored_startX)), np.array((explored_startY)), np.array((explored_endX)), np.array((explored_endY)), units = 'xy', scale = 1, color = 'g', label='Explored region')
-            #    plt.savefig("output1/sample" + str(count) + ".png", dpi=1700)
-            count = count + 1
-    
-        # backtrack space
-        if(len(backtrackStates) > 0):
-            for index in range(1, len(backtrackStates)):
-                startX.append(backtrackStates[index-1][1])
-                startY.append(backtrackStates[index-1][0])
-                endX.append(backtrackStates[index][1] - backtrackStates[index-1][1])
-                endY.append(backtrackStates[index][0] - backtrackStates[index-1][0])    
-                #if(count % 2 == 0):
-                #    plt.quiver(np.array((startX)), np.array((startY)), np.array((endX)), np.array((endY)), units = 'xy', scale = 1, color = 'r', label='Backtrack path')
-                #    plt.savefig("output1/sample" + str(count) + ".png", dpi=1700)
-                count = count + 1
-
-        plt.quiver(np.array((explored_startX)), np.array((explored_startY)), np.array((explored_endX)), np.array((explored_endY)), units = 'xy', scale = 1, color = 'g', label='Explored region')
-        if(len(backtrackStates) > 0):
-            plt.quiver(np.array((startX)), np.array((startY)), np.array((endX)), np.array((endY)), units = 'xy', scale = 1, color = 'r', label='Backtrack path')
-        plt.savefig("sample.png", dpi=1700)
-        plt.legend()
-        plt.show()
-        plt.close()
         
     # eucledian heuristic (becomes weighted a-star when weight made greater than 1.0)
     def euc_heuristic(self, currX, currY, weight = 1.0):
-        return weight * (np.sqrt(((self.goal[0] - currX) ** 2) + ((self.goal[1] - currY) ** 2)) / 0.5)
+        return weight * (np.sqrt(self.gridSize * ((self.goal[0] - currX) ** 2) + ((self.goal[1] - currY) ** 2)))
     
     # a-star algo
     def search(self):
@@ -307,75 +259,75 @@ class AStar(object):
         while(len(queue) > 0):
             # get current node
             _, _, currentNode = heappop(queue)
-            self.visited[(int(round(2.0 * currentNode[0])), int(round(2.0 * currentNode[1])), int(round(currentNode[2])))] = True
+            self.visited[(int(round(self.gridSize * currentNode[0])), int(round(self.gridSize * currentNode[1])))] = True   
             exploredStates.append(currentNode)
             steps = steps + 1
             
             # if goal node then break, using the distance formula
-            if(np.square(np.abs(currentNode[0] - self.goal[0])) + np.square(np.abs(currentNode[1] - self.goal[1])) < 0.5625):
+            if(np.square(np.abs(currentNode[0] - self.goal[0])) + np.square(np.abs(currentNode[1] - self.goal[1])) < 15):
                 backtrackNode = currentNode
                 flag = 1
                 break
                
             # break if steps greater than 5000000
-            if(steps > 5000000):
+            if(steps > 500000):
                 break
 
             # traverse the edges
             # action 1
-            (moveOnePossible, newX, newY, newTheta) = self.ActionMoveRobot(currentNode, 0, self.wheelRPM[0])
+            (moveOnePossible, newX, newY, newTheta, dvx, dvy, dw, cost) = self.ActionMoveRobot(currentNode, 0, self.wheelRPM[0])
             if(moveOnePossible):
-                updateHeap = self.UpdateAction(currentNode, self.wheelRPM[0], newX, newY, newTheta, (0, self.wheelRPM[0]))
+                updateHeap = self.UpdateAction(currentNode, self.wheelRPM[0], newX, newY, newTheta, (dvx, dvy, dw), cost)
                 if(updateHeap):
                     heappush(queue, (self.distance[(newX, newY, newTheta)], self.costToCome[(newX, newY, newTheta)], (newX, newY, newTheta)))
             
             # action 2
-            (moveTwoPossible, newX, newY, newTheta) = self.ActionMoveRobot(currentNode, self.wheelRPM[0], 0)
+            (moveTwoPossible, newX, newY, newTheta, dvx, dvy, dw, cost) = self.ActionMoveRobot(currentNode, self.wheelRPM[0], 0)
             if(moveTwoPossible):
-                updateHeap = self.UpdateAction(currentNode, self.wheelRPM[0], newX, newY, newTheta, (self.wheelRPM[0], 0))
+                updateHeap = self.UpdateAction(currentNode, self.wheelRPM[0], newX, newY, newTheta, (dvx, dvy, dw), cost)
                 if(updateHeap):
                     heappush(queue, (self.distance[(newX, newY, newTheta)], self.costToCome[(newX, newY, newTheta)], (newX, newY, newTheta)))
                     
             # action 3
-            (moveThreePossible, newX, newY, newTheta) = self.ActionMoveRobot(currentNode, self.wheelRPM[0], self.wheelRPM[0])
+            (moveThreePossible, newX, newY, newTheta, dvx, dvy, dw, cost) = self.ActionMoveRobot(currentNode, self.wheelRPM[0], self.wheelRPM[0])
             if(moveThreePossible):
-                updateHeap = self.UpdateAction(currentNode, (self.wheelRPM[0] * 1.4142), newX, newY, newTheta, (self.wheelRPM[0], self.wheelRPM[0]))
+                updateHeap = self.UpdateAction(currentNode, (self.wheelRPM[0] * 1.4142), newX, newY, newTheta, (dvx, dvy, dw), cost)
                 if(updateHeap):
                     heappush(queue, (self.distance[(newX, newY, newTheta)], self.costToCome[(newX, newY, newTheta)], (newX, newY, newTheta)))
               
             # action 4
-            (moveFourPossible, newX, newY, newTheta) = self.ActionMoveRobot(currentNode, 0, self.wheelRPM[1])      
+            (moveFourPossible, newX, newY, newTheta, dvx, dvy, dw, cost) = self.ActionMoveRobot(currentNode, 0, self.wheelRPM[1])      
             if(moveFourPossible):
-                updateHeap = self.UpdateAction(currentNode, self.wheelRPM[1], newX, newY, newTheta, (0, self.wheelRPM[1]))
+                updateHeap = self.UpdateAction(currentNode, self.wheelRPM[1], newX, newY, newTheta, (dvx, dvy, dw), cost)
                 if(updateHeap):
                     heappush(queue, (self.distance[(newX, newY, newTheta)], self.costToCome[(newX, newY, newTheta)], (newX, newY, newTheta)))
                     
             # action 5
-            (moveFivePossible, newX, newY, newTheta) = self.ActionMoveRobot(currentNode, self.wheelRPM[1], 0)
+            (moveFivePossible, newX, newY, newTheta, dvx, dvy, dw, cost) = self.ActionMoveRobot(currentNode, self.wheelRPM[1], 0)
             if(moveFivePossible):
-                updateHeap = self.UpdateAction(currentNode, self.wheelRPM[1], newX, newY, newTheta, (self.wheelRPM[1], 0))
+                updateHeap = self.UpdateAction(currentNode, self.wheelRPM[1], newX, newY, newTheta, (dvx, dvy, dw), cost)
                 if(updateHeap):
                     heappush(queue, (self.distance[(newX, newY, newTheta)], self.costToCome[(newX, newY, newTheta)], (newX, newY, newTheta)))
 
             # action 6
-            (moveSixPossible, newX, newY, newTheta) = self.ActionMoveRobot(currentNode, self.wheelRPM[1], self.wheelRPM[1])
+            (moveSixPossible, newX, newY, newTheta, dvx, dvy, dw, cost) = self.ActionMoveRobot(currentNode, self.wheelRPM[1], self.wheelRPM[1])
             if(moveSixPossible):
-                updateHeap = self.UpdateAction(currentNode, (self.wheelRPM[1] * 1.4142), newX, newY, newTheta, (self.wheelRPM[1], self.wheelRPM[1]))
+                updateHeap = self.UpdateAction(currentNode, (self.wheelRPM[1] * 1.4142), newX, newY, newTheta, (dvx, dvy, dw), cost)
                 if(updateHeap):
                     heappush(queue, (self.distance[(newX, newY, newTheta)], self.costToCome[(newX, newY, newTheta)], (newX, newY, newTheta)))
                     
             # action 7
-            (moveSevenPossible, newX, newY, newTheta) = self.ActionMoveRobot(currentNode, self.wheelRPM[0], self.wheelRPM[1])
+            (moveSevenPossible, newX, newY, newTheta, dvx, dvy, dw, cost) = self.ActionMoveRobot(currentNode, self.wheelRPM[0], self.wheelRPM[1])
             if(moveSevenPossible):
-                updateHeap = self.UpdateAction(currentNode, max((self.wheelRPM[0] * 1.4142), (self.wheelRPM[1] * 1.4142)), newX, newY, newTheta, (self.wheelRPM[0], self.wheelRPM[1]))
+                updateHeap = self.UpdateAction(currentNode, max((self.wheelRPM[0] * 1.4142), (self.wheelRPM[1] * 1.4142)), newX, newY, newTheta, (dvx, dvy, dw), cost)
                 if(updateHeap):
                     heappush(queue, (self.distance[(newX, newY, newTheta)], self.costToCome[(newX, newY, newTheta)], (newX, newY, newTheta)))
 
             
             # action 8
-            (moveEightPossible, newX, newY, newTheta) = self.ActionMoveRobot(currentNode, self.wheelRPM[1], self.wheelRPM[0])
+            (moveEightPossible, newX, newY, newTheta, dvx, dvy, dw, cost) = self.ActionMoveRobot(currentNode, self.wheelRPM[1], self.wheelRPM[0])
             if(moveEightPossible):
-                updateHeap = self.UpdateAction(currentNode, max((self.wheelRPM[0] * 1.4142), (self.wheelRPM[1] * 1.4142)), newX, newY, newTheta, (self.wheelRPM[1], self.wheelRPM[0]))
+                updateHeap = self.UpdateAction(currentNode, max((self.wheelRPM[0] * 1.4142), (self.wheelRPM[1] * 1.4142)), newX, newY, newTheta, (dvx, dvy, dw), cost)
                 if(updateHeap):
                     heappush(queue, (self.distance[(newX, newY, newTheta)], self.costToCome[(newX, newY, newTheta)], (newX, newY, newTheta)))
 
