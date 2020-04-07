@@ -55,8 +55,9 @@ if(astar.IsValid(start[0], start[1])):
     if(astar.IsValid(goal[0], goal[1])):
         if(astar.IsObstacle(start[0],start[1]) == False):
             if(astar.IsObstacle(goal[0], goal[1]) == False):
-                (explored_states, backtrack_states, actions, distance_from_start_to_goal) = astar.search()
-
+                states = astar.search()
+                explored_states = states[0]
+                backtrack_states = states[1]
                 
                 # move turtlebot
                 #x, y, theta = backtrack_states
@@ -75,13 +76,13 @@ if(astar.IsValid(start[0], start[1])):
                     print("\nOptimal path found. Distance is " + str(distance_from_start_to_goal))
             else:
                 print("The entered goal node is an obstacle ")
-                print("Please check README.md file for running Astar_rigid.py file.")
+                print("Please check README.md file for running turtlebot_astar.py file.")
         else:
             print("The entered start node is an obstacle ")
-            print("Please check README.md file for running Astar_rigid.py file.")
+            print("Please check README.md file for running turtlebot_astar.py file.")
     else:
         print("The entered goal node outside the map ")
-        print("Please check README.md file for running Astar_rigid.py file.")
+        print("Please check README.md file for running turtlebot_astar.py file.")
 else:
     print("The entered start node is outside the map ")
-    print("Please check README.md file for running Astar_rigid.py file.")
+    print("Please check README.md file for running turtlebot_astar.py file.")

@@ -106,7 +106,7 @@ def go_to_point(robot_x, robot_y, pub_vel):
  
         if abs(angle_to_goal - angle) > 0.1:
             vel_value.linear.x = 0
-            vel_value.angular.z = 0.25
+            vel_value.angular.z = 0.5
         else:
             vel_value.linear.x = 0.25
             vel_value.angular.z = 0
@@ -148,7 +148,7 @@ class AStar(object):
         self.wheelRPM = wheelRPM
         
         # clearance variable - distance of the robot from the obstacle
-        self.clearance = min(clearance + 5, 8)
+        self.clearance = min(clearance + 5, 10)
         
         # radius variable - the radius of the robot (taken from turtlebot datasheet)
         self.radius = 22.0
@@ -181,7 +181,10 @@ class AStar(object):
         self.hashMap = {}
         
         # goalThreshold - threshold from goal node
-        goalThreshold = 15
+        self.goalThreshold = 15
+        
+        # frequency - the value of frequency for curved path
+        self.frequency = 100
         
         # initialise the visited array as False (meaning all nodes are not visited yet!)
         for val1 in range(-self.gridSize * self.xLength, self.gridSize * self.xLength + 1):
@@ -314,12 +317,12 @@ class AStar(object):
         w = (self.wheelRadius / self.wheelDistance) * (rightAngularVelocity - leftAngularVelocity)
         
         # get updated node after moving 100 steps
-        for index in range(0, 100):
+        for index in range(0, self.frequency):
             dvx = self.wheelRadius * 0.5 * (leftAngularVelocity + rightAngularVelocity) * math.cos(theta)
             dvy = self.wheelRadius * 0.5 * (leftAngularVelocity + rightAngularVelocity) * math.sin(theta)
-            dx = dvx / 100
-            dy = dvy / 100
-            dtheta = w / 100
+            dx = dvx / self.frequency
+            dy = dvy / self.frequency
+            dtheta = w / self.frequency
             x = x + dx
             y = y + dy
             theta = theta + dtheta
@@ -329,7 +332,7 @@ class AStar(object):
                 flag = False
                 
         # pruning
-        if(self.hashMap.get(int(int(x * 1000) + int(y * 1))) != None):
+        if(self.hashMap.get(int(int(x * 1000) + int(y))) != None):
             flag = False
             
         # return updated location
@@ -357,7 +360,7 @@ class AStar(object):
         
         # update position
         (newX, newY, newTheta, cost, dvx, dvy, dw, flag) = self.GetNewPositionOfRobot(currentNode, leftRPM, rightRPM)
-        self.hashMap[int(int(newX * 1000) + int(newY * 1))] = 1
+        self.hashMap[int(int(newX * 1000) + int(newY))] = 1
         
         # check obstacle
         if(flag == True and self.IsValid(newX, newY) and self.IsObstacle(newX, newY) == False and self.visited[(int(round(self.gridSize * newX)), int(round(self.gridSize * newY)))] == False):
@@ -399,7 +402,7 @@ class AStar(object):
         
         
     # eucledian heuristic (becomes weighted a-star when weight made greater than 1.0)
-    def euc_heuristic(self, currX, currY, weight = 1.0):
+    def euc_heuristic(self, currX, currY, weight = 3.0):
         """
         Inputs:
         
@@ -443,7 +446,7 @@ class AStar(object):
             # get current node
             _, _, currentNode = heappop(queue)
             self.visited[(int(round(self.gridSize * currentNode[0])), int(round(self.gridSize * currentNode[1])))] = True   
-            self.hashMap[int(int(currentNode[0] * 1000) + int(currentNode[1] * 1))] = 1
+            self.hashMap[int(int(currentNode[0] * 1000) + int(currentNode[1]))] = 1
             exploredStates.append(currentNode)
             steps = steps + 1
             
