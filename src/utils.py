@@ -330,9 +330,10 @@ class AStar(object):
             
             if(self.IsValid(x, y) == False or self.IsObstacle(x, y)):
                 flag = False
+                break
                 
         # pruning
-        if(self.hashMap.get(int(int(x * 1000) + int(y))) != None):
+        if(flag != False and self.hashMap.get(int(int(x * 100) + int(y * 10))) != None):
             flag = False
             
         # return updated location
@@ -360,7 +361,7 @@ class AStar(object):
         
         # update position
         (newX, newY, newTheta, cost, dvx, dvy, dw, flag) = self.GetNewPositionOfRobot(currentNode, leftRPM, rightRPM)
-        self.hashMap[int(int(newX * 1000) + int(newY))] = 1
+        self.hashMap[int(int(newX * 100) + int(newY * 10))] = 1
         
         # check obstacle
         if(flag == True and self.IsValid(newX, newY) and self.IsObstacle(newX, newY) == False and self.visited[(int(round(self.gridSize * newX)), int(round(self.gridSize * newY)))] == False):
@@ -446,7 +447,7 @@ class AStar(object):
             # get current node
             _, _, currentNode = heappop(queue)
             self.visited[(int(round(self.gridSize * currentNode[0])), int(round(self.gridSize * currentNode[1])))] = True   
-            self.hashMap[int(int(currentNode[0] * 1000) + int(currentNode[1]))] = 1
+            self.hashMap[int(int(currentNode[0] * 100) + int(currentNode[1] * 10))] = 1
             exploredStates.append(currentNode)
             steps = steps + 1
             
