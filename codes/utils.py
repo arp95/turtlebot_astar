@@ -93,7 +93,6 @@ class AStar(object):
         # frequency - the value of frequency for curved path
         self.frequency = 100
     
-
     # move is valid or not
     def IsValid(self, currX, currY):
         """
@@ -130,7 +129,7 @@ class AStar(object):
         
         # check circles(obstacles) in the given map
         dist1 = ((row - 200.0) * (row - 200.0) + (col - 300.0) * (col - 300.0)) - ((100 + sum_of_c_and_r) * (100 + sum_of_c_and_r))
-        dist2 = ((row + 200.0) * (row + 200.0) + (col - 300.0) * (col - 300.0)) - ((100 + sum_of_c_and_r) * (100 + sum_of_c_and_r))
+        dist2 = ((row - 200.0) * (row - 200.0) + (col + 300.0) * (col + 300.0)) - ((100 + sum_of_c_and_r) * (100 + sum_of_c_and_r))
         dist3 = ((row + 200.0) * (row + 200.0) + (col + 300.0) * (col + 300.0)) - ((100 + sum_of_c_and_r) * (100 + sum_of_c_and_r))
         dist4 = ((row) * (row) + (col) * (col)) - ((100 + sum_of_c_and_r) * (100 + sum_of_c_and_r))
         
@@ -165,10 +164,10 @@ class AStar(object):
             dist8 = 0
 
         # check third square(obstacle) in the given map
-        (x1, y1) = (125 - sqrt_of_c_and_r, -375 - sqrt_of_c_and_r)
-        (x2, y2) = (125 - sqrt_of_c_and_r, -225 + sqrt_of_c_and_r)
-        (x3, y3) = (275 + sqrt_of_c_and_r, -225 + sqrt_of_c_and_r)
-        (x4, y4) = (275 + sqrt_of_c_and_r, -375 - sqrt_of_c_and_r)
+        (x1, y1) = (-125 - sqrt_of_c_and_r, 375 - sqrt_of_c_and_r)
+        (x2, y2) = (-125 - sqrt_of_c_and_r, 225 + sqrt_of_c_and_r)
+        (x3, y3) = (-275 + sqrt_of_c_and_r, 225 + sqrt_of_c_and_r)
+        (x4, y4) = (-275 + sqrt_of_c_and_r, 375 - sqrt_of_c_and_r)
         first = ((col - y1) * (x2 - x1)) - ((y2 - y1) * (row - x1))
         second = ((col - y2) * (x3 - x2)) - ((y3 - y2) * (row - x2))
         third = ((col - y3) * (x4 - x3)) - ((y4 - y3) * (row - x3))
@@ -252,7 +251,7 @@ class AStar(object):
         plt.quiver(np.array((explored_startX)), np.array((explored_startY)), np.array((explored_endX)), np.array((explored_endY)), units = 'xy', scale = 1, color = 'g', label = 'Explored region')
         if(len(backtrackStates) > 0):
             plt.quiver(np.array((startX)), np.array((startY)), np.array((endX)), np.array((endY)), units = 'xy', scale = 1, color = 'r', label = 'Backtrack path')
-        plt.savefig("sample.png", dpi=1700)
+        #plt.savefig("sample.png", dpi=1700)
         plt.legend()
         plt.show()
         plt.close()
