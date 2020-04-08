@@ -39,27 +39,25 @@ secondRPM = float(input("Enter the second value of RPM : "))
 clearance = float(input("Enter the clearance of the rigid robot : "))
 
 # take start and goal node as input
-start = (startX, startY, startOrientation)
-goal = (goalX, goalY)
-wheelRPM = (firstRPM, secondRPM)
+start = (startX, startY, startOrientation) # (400, 300)
+goal = (goalX, goalY) # (-400, -300)
+wheelRPM = (firstRPM, secondRPM) # (100, 50)
 astar = AStar(start, goal, wheelRPM, clearance)
 
 if(astar.IsValid(start[0], start[1])):
     if(astar.IsValid(goal[0], goal[1])):
         if(astar.IsObstacle(start[0],start[1]) == False):
             if(astar.IsObstacle(goal[0], goal[1]) == False):
-                (explored_states, backtrack_states, actions, distance_from_start_to_goal) = astar.search()
-                #astar.animate(explored_states, backtrack_states, "./astar_rigid.avi")
-                
-                print(len(explored_states))
-                print(len(backtrack_states))
-                print(len(actions))
+                states = astar.search()
+                explored_states = states[0]
+                backtrack_states = states[1]
+                astar.animate(explored_states, backtrack_states)
 
                 # print optimal path found or not
-                if(distance_from_start_to_goal == float('inf')):
+                if(len(backtrack_states) == 0):
                     print("\nNo optimal path found.")
                 else:
-                    print("\nOptimal path found. Distance is " + str(distance_from_start_to_goal))
+                    print("\nOptimal path found.")
             else:
                 print("The entered goal node is an obstacle ")
                 print("Please check README.md file for running Astar_rigid.py file.")
