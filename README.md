@@ -1,4 +1,4 @@
-# Path Planning using A-star Algorithm
+# A-star Algorithm on a Non-holonomic Robot
 
 [![Packagist](https://img.shields.io/packagist/l/doctrine/orm.svg)](LICENSE.md)
 ---
@@ -17,13 +17,9 @@ python Astar_rigid.py
 ```
 
 
-### Obstacle Map
-![Screenshot](output/map.jpg)
-
-
 ### Results
-The following is an example of A-star algorithm applied on a rigid robot (Start Node- (50, 30, 60), Goal Node- (150, 150), Radius- 1, Clearance- 1, Step Size- 1):
-![Screenshot](output/screen.png)
+The following is an example of A-star algorithm applied on a rigid robot (Start Node- (400, 300, 0), Goal Node- (-400, -300), Wheel RPM- (100, 50), Clearance- 10):
+![Screenshot](output/output.png)
 
 
 ### Software Required
