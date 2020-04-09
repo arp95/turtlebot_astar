@@ -159,9 +159,6 @@ class AStar(object):
         # wheelRadius - the radius of the wheels (taken from turtlebot datasheet)
         self.wheelRadius = 3.3
         
-        # gridSize variable - custom-made variable to handle the visited nodes area
-        self.gridSize = 1
-        
         # distance - hashmap that stores net distance of the node from the start and the goal
         self.distance = {}
         
@@ -174,10 +171,7 @@ class AStar(object):
         # costToGo - hashmap to store the distance of the nodes from the goal node
         self.costToGo = {}
         
-        # visited - hashmap to store the visited nodes
-        self.visited = {}
-        
-        # hashMap - custom variable
+        # hashMap - custom variable to hold visited nodes
         self.hashMap = {}
         
         # goalThreshold - threshold from goal node
@@ -185,11 +179,6 @@ class AStar(object):
         
         # frequency - the value of frequency for curved path
         self.frequency = 100
-        
-        # initialise the visited array as False (meaning all nodes are not visited yet!)
-        for val1 in range(-self.gridSize * self.xLength, self.gridSize * self.xLength + 1):
-            for val2 in range(-self.gridSize * self.yLength, self.gridSize * self.yLength + 1):
-                self.visited[(val1, val2)] = False
     
     # move is valid or not
     def IsValid(self, currX, currY):
@@ -227,7 +216,7 @@ class AStar(object):
         
         # check circles(obstacles) in the given map
         dist1 = ((row - 200.0) * (row - 200.0) + (col - 300.0) * (col - 300.0)) - ((100 + sum_of_c_and_r) * (100 + sum_of_c_and_r))
-        dist2 = ((row + 200.0) * (row + 200.0) + (col - 300.0) * (col - 300.0)) - ((100 + sum_of_c_and_r) * (100 + sum_of_c_and_r))
+        dist2 = ((row - 200.0) * (row - 200.0) + (col + 300.0) * (col + 300.0)) - ((100 + sum_of_c_and_r) * (100 + sum_of_c_and_r))
         dist3 = ((row + 200.0) * (row + 200.0) + (col + 300.0) * (col + 300.0)) - ((100 + sum_of_c_and_r) * (100 + sum_of_c_and_r))
         dist4 = ((row) * (row) + (col) * (col)) - ((100 + sum_of_c_and_r) * (100 + sum_of_c_and_r))
         
@@ -262,10 +251,10 @@ class AStar(object):
             dist8 = 0
 
         # check third square(obstacle) in the given map
-        (x1, y1) = (125 - sqrt_of_c_and_r, -375 - sqrt_of_c_and_r)
-        (x2, y2) = (125 - sqrt_of_c_and_r, -225 + sqrt_of_c_and_r)
-        (x3, y3) = (275 + sqrt_of_c_and_r, -225 + sqrt_of_c_and_r)
-        (x4, y4) = (275 + sqrt_of_c_and_r, -375 - sqrt_of_c_and_r)
+        (x1, y1) = (-125 - sqrt_of_c_and_r, 375 - sqrt_of_c_and_r)
+        (x2, y2) = (-125 - sqrt_of_c_and_r, 225 + sqrt_of_c_and_r)
+        (x3, y3) = (-275 + sqrt_of_c_and_r, 225 + sqrt_of_c_and_r)
+        (x4, y4) = (-275 + sqrt_of_c_and_r, 375 - sqrt_of_c_and_r)
         first = ((col - y1) * (x2 - x1)) - ((y2 - y1) * (row - x1))
         second = ((col - y2) * (x3 - x2)) - ((y3 - y2) * (row - x2))
         third = ((col - y3) * (x4 - x3)) - ((y4 - y3) * (row - x3))
@@ -280,6 +269,79 @@ class AStar(object):
         if(dist1 <= 0 or dist2 <= 0 or dist3 <= 0 or dist4 <= 0 or dist5 == 0 or dist6 == 0 or dist7 == 0 or dist8 == 0 or dist9 == 0 or dist10 == 0):
             return True
         return False
+    
+    
+    # animate path and show the nodes on map
+    def animate(self, exploredStates, backtrackStates):
+        """
+        Inputs:
+        
+        exploredStates: list of explored states when going from start to  goal node.
+        backtrackStates: list of states to go from start to goal node.
+        """
+        
+        startX = []
+        startY = []
+        endX = []
+        endY = []
+        explored_startX = []
+        explored_startY = []
+        explored_endX = []
+        explored_endY = []
+        fig, ax = plt.subplots()
+        plt.xlabel("x-coordinate")
+        plt.ylabel("y-coordinate")
+        plt.grid()
+        ax.set_aspect('equal')
+        plt.xlim(-self.xLength, self.xLength)
+        plt.ylim(-self.yLength, self.yLength)
+        count = 0
+        
+        # obstacle space
+        obstacleX = []
+        obstacleY = []
+        size = []
+        for index1 in range(-self.xLength, self.xLength):
+            for index2 in range(-self.yLength, self.yLength):
+                if(self.IsObstacle(index1, index2)):
+                    obstacleX.append(index1)
+                    obstacleY.append(index2)     
+                    size.append(15)      
+        obstacleX = np.array(obstacleX)
+        obstacleY = np.array(obstacleY)
+        plt.scatter(obstacleX, obstacleY, color='b', s=size)
+
+        # explore node space
+        for index in range(1, len(exploredStates)):
+            parentNode = self.path[exploredStates[index]][0]
+            explored_startX.append(parentNode[0])
+            explored_startY.append(parentNode[1])
+            explored_endX.append(exploredStates[index][0] - parentNode[0])
+            explored_endY.append(exploredStates[index][1] - parentNode[1])    
+            #if(count % 500 == 0):
+            #    plt.quiver(np.array((explored_startX)), np.array((explored_startY)), np.array((explored_endX)), np.array((explored_endY)), units = 'xy', scale = 1, color = 'g', label = 'Explored region')
+            #    plt.savefig("output/phase3/sample" + str(count) + ".png", dpi=1700)
+            count = count + 1
+
+        # backtrack space
+        if(len(backtrackStates) > 0):
+            for index in range(1, len(backtrackStates)):
+                startX.append(backtrackStates[index-1][0])
+                startY.append(backtrackStates[index-1][1])
+                endX.append(backtrackStates[index][0] - backtrackStates[index-1][0])
+                endY.append(backtrackStates[index][1] - backtrackStates[index-1][1])    
+                #if(count % 2 == 0):
+                #    plt.quiver(np.array((startX)), np.array((startY)), np.array((endX)), np.array((endY)), units = 'xy', scale = 1, color = 'r', label = 'Backtrack path')
+                #    plt.savefig("output/phase3/sample" + str(count) + ".png", dpi=1700)
+                count = count + 1
+
+        plt.quiver(np.array((explored_startX)), np.array((explored_startY)), np.array((explored_endX)), np.array((explored_endY)), units = 'xy', scale = 1, color = 'g', label = 'Explored region')
+        if(len(backtrackStates) > 0):
+            plt.quiver(np.array((startX)), np.array((startY)), np.array((endX)), np.array((endY)), units = 'xy', scale = 1, color = 'r', label = 'Backtrack path')
+        #plt.savefig("sample.png", dpi=1700)
+        plt.legend()
+        plt.show()
+        plt.close()
     
     
     # return updated position by taking into account non-holonomic constraint of robot
@@ -364,7 +426,7 @@ class AStar(object):
         self.hashMap[int(int(newX * 100) + int(newY * 10))] = 1
         
         # check obstacle
-        if(flag == True and self.IsValid(newX, newY) and self.IsObstacle(newX, newY) == False and self.visited[(int(round(self.gridSize * newX)), int(round(self.gridSize * newY)))] == False):
+        if(flag == True and self.IsValid(newX, newY) and self.IsObstacle(newX, newY) == False):
             return (True, newX, newY, newTheta, dvx, dvy, dw, cost)
         return (False, newX, newY, newTheta, dvx, dvy, dw, cost)
 
@@ -416,7 +478,7 @@ class AStar(object):
         Returns the eucledian distance between goal node and the current node(currX, currY)
         """
         
-        return weight * (np.sqrt(self.gridSize * ((self.goal[0] - currX) ** 2) + ((self.goal[1] - currY) ** 2)))
+        return weight * (np.sqrt(((self.goal[0] - currX) ** 2) + ((self.goal[1] - currY) ** 2)))
     
     
     # a-star algo
@@ -445,8 +507,7 @@ class AStar(object):
         while(len(queue) > 0):
             
             # get current node
-            _, _, currentNode = heappop(queue)
-            self.visited[(int(round(self.gridSize * currentNode[0])), int(round(self.gridSize * currentNode[1])))] = True   
+            _, _, currentNode = heappop(queue) 
             self.hashMap[int(int(currentNode[0] * 100) + int(currentNode[1] * 10))] = 1
             exploredStates.append(currentNode)
             steps = steps + 1
