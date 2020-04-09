@@ -81,10 +81,10 @@
       <heading_deg>0</heading_deg>
     </spherical_coordinates>
     <state world_name='default'>
-      <sim_time>6598 814000000</sim_time>
-      <real_time>86 965998399</real_time>
-      <wall_time>1585694833 151787512</wall_time>
-      <iterations>86625</iterations>
+      <sim_time>6764 655000000</sim_time>
+      <real_time>166 186112891</real_time>
+      <wall_time>1586275936 644116752</wall_time>
+      <iterations>165841</iterations>
       <model name='grey_wall'>
         <pose frame=''>0 -5.1 -1.1 0 -0 0</pose>
         <scale>1 1 1</scale>
@@ -156,10 +156,10 @@
         </link>
       </model>
       <model name='wood_cube_10cm_clone_1'>
-        <pose frame=''>2 -3 0.03 0 -0 0</pose>
+        <pose frame=''>-2 3 0.03 0 -0 0</pose>
         <scale>1 1 1</scale>
         <link name='link'>
-          <pose frame=''>2 -3 0.08 0 -0 0</pose>
+          <pose frame=''>-2 3 0.08 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
@@ -196,10 +196,10 @@
         </link>
       </model>
       <model name='wooden_peg_clone_0_clone'>
-        <pose frame=''>-2 3 1.3 0 -0 0</pose>
+        <pose frame=''>2 -3 1.3 0 -0 0</pose>
         <scale>1 1 1</scale>
         <link name='link'>
-          <pose frame=''>-2 3 0.2 0 -0 0</pose>
+          <pose frame=''>2 -3 0.2 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
@@ -211,7 +211,7 @@
     </state>
     <gui fullscreen='0'>
       <camera name='user_camera'>
-        <pose frame=''>-2.64266 15.3231 11.3589 0 0.6418 -1.33098</pose>
+        <pose frame=''>-0.164147 -12.8298 17.4452 0 1.07419 1.44431</pose>
         <view_controller>orbit</view_controller>
         <projection_type>perspective</projection_type>
       </camera>
