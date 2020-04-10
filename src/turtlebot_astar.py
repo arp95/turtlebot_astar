@@ -59,14 +59,14 @@ if(astar.IsValid(start[0], start[1])):
                 explored_states = states[0]
                 backtrack_states = states[1]
                 
-                # move turtlebot
-                #x, y, theta = backtrack_states
-                #while not rospy.is_shutdown():
-                #    speed.linear.x = 0.1
-                #    speed.angular.z = 0.0
-                #    pub.publish(move_cmd)
-                #    r.sleep()
-                #    break
+                #move turtlebot
+                x, y, theta = backtrack_states
+                while not rospy.is_shutdown():
+                    speed.linear.x = 0.1
+                    speed.angular.z = 0.0
+                    pub.publish(move_cmd)
+                    r.sleep()
+                    break
 
 
                 # print optimal path found or not
