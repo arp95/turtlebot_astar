@@ -1,10 +1,10 @@
-# Path Planning using A-star Algorithm
+# Using A-star Algorithm on ROS Turtlebot
 
 [![Packagist](https://img.shields.io/packagist/l/doctrine/orm.svg)](LICENSE.md)
 ---
 
 
-### Author
+### Authors
 Arpit Aggarwal Shantam Bajpai
 
 
@@ -17,14 +17,10 @@ python Astar_rigid.py
 ```
 
 
-### Obstacle Map
-![Screenshot](output/map.jpg)
-
-
 ### Results
-The following is an example of A-star algorithm applied on a rigid robot (Start Node- (50, 30, 60), Goal Node- (150, 150), Radius- 1, Clearance- 1, Step Size- 1):
-![Screenshot](output/screen.png)
+The following is an example of A-star algorithm applied on a rigid robot (Start Node(in m)- (4, 3, 0), Goal Node(in m)- (-4, -3), Wheel RPM- (100, 50), Clearance(in m)- 0.2):
+![Screenshot](output.png)
 
 
 ### Software Required
-To run the .py files, use Python 3. Standard Python 3 libraries like numpy, heapq and matplotlib are used.
+To run the .py files, use Python 3. ROS Turtlebot package and Standard Python 3 libraries like rospy, numpy, heapq and matplotlib are used.
