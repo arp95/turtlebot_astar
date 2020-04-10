@@ -54,6 +54,7 @@ class AStar(object):
         self.goal = goal
         
         # the map size along x and y dimensions in cms (map dimension are from -500 to 500 for both x and y direction)
+        # map size is 1000 cm x 1000 cm
         self.xLength = 500
         self.yLength = 500
         
@@ -61,16 +62,16 @@ class AStar(object):
         self.wheelRPM = wheelRPM
         
         # clearance variable - distance of the robot from the obstacle
-        self.clearance = min(clearance + 5, 10)
+        self.clearance = min(clearance + 10, 25)
         
         # radius variable - the radius of the robot (taken from turtlebot datasheet)
-        self.radius = 22.0
+        self.radius = 20.0
         
         # wheelDistance - the distance between wheels (taken from turtlebot datasheet)
-        self.wheelDistance = 29.0
+        self.wheelDistance = 34.0
         
         # wheelRadius - the radius of the wheels (taken from turtlebot datasheet)
-        self.wheelRadius = 3.3
+        self.wheelRadius = 3.8
         
         # distance - hashmap that stores net distance of the node from the start and the goal
         self.distance = {}
@@ -93,6 +94,7 @@ class AStar(object):
         # frequency - the value of frequency for curved path
         self.frequency = 100
     
+
     # move is valid or not
     def IsValid(self, currX, currY):
         """
@@ -164,10 +166,10 @@ class AStar(object):
             dist8 = 0
 
         # check third square(obstacle) in the given map
-        (x1, y1) = (-125 - sqrt_of_c_and_r, 375 - sqrt_of_c_and_r)
-        (x2, y2) = (-125 - sqrt_of_c_and_r, 225 + sqrt_of_c_and_r)
-        (x3, y3) = (-275 + sqrt_of_c_and_r, 225 + sqrt_of_c_and_r)
-        (x4, y4) = (-275 + sqrt_of_c_and_r, 375 - sqrt_of_c_and_r)
+        (x1, y1) = (-125 + sqrt_of_c_and_r, 375 + sqrt_of_c_and_r)
+        (x2, y2) = (-125 + sqrt_of_c_and_r, 225 - sqrt_of_c_and_r)
+        (x3, y3) = (-275 - sqrt_of_c_and_r, 225 - sqrt_of_c_and_r)
+        (x4, y4) = (-275 - sqrt_of_c_and_r, 375 + sqrt_of_c_and_r)
         first = ((col - y1) * (x2 - x1)) - ((y2 - y1) * (row - x1))
         second = ((col - y2) * (x3 - x2)) - ((y3 - y2) * (row - x2))
         third = ((col - y3) * (x4 - x3)) - ((y4 - y3) * (row - x3))
@@ -202,12 +204,12 @@ class AStar(object):
         explored_endX = []
         explored_endY = []
         fig, ax = plt.subplots()
-        plt.xlabel("x-coordinate")
-        plt.ylabel("y-coordinate")
+        plt.xlabel("x-coordinate(in m)")
+        plt.ylabel("y-coordinate(in m)")
         plt.grid()
         ax.set_aspect('equal')
-        plt.xlim(-self.xLength, self.xLength)
-        plt.ylim(-self.yLength, self.yLength)
+        plt.xlim(-self.xLength / 100.0, self.xLength / 100.0)
+        plt.ylim(-self.yLength / 100.0, self.yLength / 100.0)
         count = 0
         
         # obstacle space
@@ -217,8 +219,8 @@ class AStar(object):
         for index1 in range(-self.xLength, self.xLength):
             for index2 in range(-self.yLength, self.yLength):
                 if(self.IsObstacle(index1, index2)):
-                    obstacleX.append(index1)
-                    obstacleY.append(index2)     
+                    obstacleX.append(index1 / 100.0)
+                    obstacleY.append(index2 / 100.0)     
                     size.append(15)      
         obstacleX = np.array(obstacleX)
         obstacleY = np.array(obstacleY)
@@ -227,11 +229,11 @@ class AStar(object):
         # explore node space
         for index in range(1, len(exploredStates)):
             parentNode = self.path[exploredStates[index]][0]
-            explored_startX.append(parentNode[0])
-            explored_startY.append(parentNode[1])
-            explored_endX.append(exploredStates[index][0] - parentNode[0])
-            explored_endY.append(exploredStates[index][1] - parentNode[1])    
-            #if(count % 500 == 0):
+            explored_startX.append(parentNode[0] / 100.0)
+            explored_startY.append(parentNode[1] / 100.0)
+            explored_endX.append((exploredStates[index][0] - parentNode[0]) / 100.0)
+            explored_endY.append((exploredStates[index][1] - parentNode[1]) / 100.0)    
+            #if(count % 2000 == 0):
             #    plt.quiver(np.array((explored_startX)), np.array((explored_startY)), np.array((explored_endX)), np.array((explored_endY)), units = 'xy', scale = 1, color = 'g', label = 'Explored region')
             #    plt.savefig("output/phase3/sample" + str(count) + ".png", dpi=1700)
             count = count + 1
@@ -239,11 +241,11 @@ class AStar(object):
         # backtrack space
         if(len(backtrackStates) > 0):
             for index in range(1, len(backtrackStates)):
-                startX.append(backtrackStates[index-1][0])
-                startY.append(backtrackStates[index-1][1])
-                endX.append(backtrackStates[index][0] - backtrackStates[index-1][0])
-                endY.append(backtrackStates[index][1] - backtrackStates[index-1][1])    
-                #if(count % 2 == 0):
+                startX.append(backtrackStates[index-1][0] / 100.0)
+                startY.append(backtrackStates[index-1][1] / 100.0)
+                endX.append((backtrackStates[index][0] - backtrackStates[index-1][0]) / 100.0)
+                endY.append((backtrackStates[index][1] - backtrackStates[index-1][1]) / 100.0)    
+                #if(count % 5 == 0):
                 #    plt.quiver(np.array((startX)), np.array((startY)), np.array((endX)), np.array((endY)), units = 'xy', scale = 1, color = 'r', label = 'Backtrack path')
                 #    plt.savefig("output/phase3/sample" + str(count) + ".png", dpi=1700)
                 count = count + 1

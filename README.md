@@ -18,7 +18,7 @@ python Astar_rigid.py
 
 
 ### Results
-The following is an example of A-star algorithm applied on a rigid robot (Start Node- (400, 300, 0), Goal Node- (-400, -300), Wheel RPM- (100, 50), Clearance- 10):
+The following is an example of A-star algorithm applied on a rigid robot (Start Node- (4, 3, 0), Goal Node- (-4, -3), Wheel RPM- (100, 50), Clearance- 0.2):
 ![Screenshot](output/output.jpg)
 
 

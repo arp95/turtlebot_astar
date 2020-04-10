@@ -29,20 +29,21 @@ from utils import *
 import sys
 
 
-startX = float(input("Enter the x-coordinate for start node : "))
-startY = float(input("Enter the y-coordinate for start node : "))
+# map size is 1000 cm x 1000 cm
+startX = float(input("Enter the x-coordinate for start node(in m) : "))
+startY = float(input("Enter the y-coordinate for start node(in m) : "))
 startOrientation = float(input("Enter the orientation for start node : "))
-goalX = float(input("Enter the x-coordinate for goal node : "))
-goalY = float(input("Enter the y-coordinate for goal node : "))
+goalX = float(input("Enter the x-coordinate for goal node(in m) : "))
+goalY = float(input("Enter the y-coordinate for goal node(in m) : "))
 firstRPM = float(input("Enter the first value of RPM : "))
 secondRPM = float(input("Enter the second value of RPM : "))
-clearance = float(input("Enter the clearance of the rigid robot : "))
+clearance = float(input("Enter the clearance of the rigid robot(in m) : "))
 
 # take start and goal node as input
-start = (startX, startY, startOrientation) # (400, 300)
-goal = (goalX, goalY) # (-400, -300)
+start = (startX * 100.0, startY * 100.0, startOrientation) # (4, 3)
+goal = (goalX * 100.0, goalY * 100.0) # (-4, -3)
 wheelRPM = (firstRPM, secondRPM) # (100, 50)
-astar = AStar(start, goal, wheelRPM, clearance)
+astar = AStar(start, goal, wheelRPM, clearance * 100.0)
 
 if(astar.IsValid(start[0], start[1])):
     if(astar.IsValid(goal[0], goal[1])):
