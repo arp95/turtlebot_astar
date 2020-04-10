@@ -29,26 +29,24 @@ from utils import *
 import sys
 
 
-# input from user
-startX = float(input("Enter the x-coordinate for start node : "))
-startY = float(input("Enter the y-coordinate for start node : "))
+# init ros node
+rospy.init_node('turtlebot_astar')
+pub_vel = rospy.Publisher('cmd_vel_mux/input/navi', Twist, queue_size=10)
+
+# map size is 1000 cm x 1000 cm
+startX = float(input("Enter the x-coordinate for start node(in m) : "))
+startY = float(input("Enter the y-coordinate for start node(in m) : "))
 startOrientation = float(input("Enter the orientation for start node : "))
-goalX = float(input("Enter the x-coordinate for goal node : "))
-goalY = float(input("Enter the y-coordinate for goal node : "))
+goalX = float(input("Enter the x-coordinate for goal node(in m) : "))
+goalY = float(input("Enter the y-coordinate for goal node(in m) : "))
 firstRPM = float(input("Enter the first value of RPM : "))
 secondRPM = float(input("Enter the second value of RPM : "))
-clearance = float(input("Enter the clearance of the rigid robot : "))
-
-# ROS node initialisation
-rospy.init_node('turtlebot_astar')
-sub_odom = rospy.Subscriber('/odom', Odometry, callback)
-pub_vel = rospy.Publisher('cmd_vel_mux/input/navi', Twist, queue_size=10)
-r = rospy.Rate(4)
+clearance = float(input("Enter the clearance of the rigid robot(in cm) : "))
 
 # take start and goal node as input
-start = (startX, startY, startOrientation)
-goal = (goalX, goalY)
-wheelRPM = (firstRPM, secondRPM)
+start = (startX * 100.0, startY * 100.0, startOrientation) # (4, 3)
+goal = (goalX * 100.0, goalY * 100.0) # (-4, -3)
+wheelRPM = (firstRPM, secondRPM) # (100, 50)
 astar = AStar(start, goal, wheelRPM, clearance)
 
 if(astar.IsValid(start[0], start[1])):
@@ -58,22 +56,19 @@ if(astar.IsValid(start[0], start[1])):
                 states = astar.search()
                 explored_states = states[0]
                 backtrack_states = states[1]
-                
-                # move turtlebot
-                #x, y, theta = backtrack_states
-                #while not rospy.is_shutdown():
-                #    speed.linear.x = 0.1
-                #    speed.angular.z = 0.0
-                #    pub.publish(move_cmd)
-                #    r.sleep()
-                #    break
+                actions = states[2]
+                #astar.animate(explored_states, backtrack_states)
 
+                # move robot in ROS from start to goal node
+                for index in range(0, len(actions)):
+                    dvx, dvy, dw = actions[index]
+                    move_robot(pub_vel, dvx, dvy, dw) 
 
                 # print optimal path found or not
-                if(distance_from_start_to_goal == float('inf')):
+                if(len(backtrack_states) == 0):
                     print("\nNo optimal path found.")
                 else:
-                    print("\nOptimal path found. Distance is " + str(distance_from_start_to_goal))
+                    print("\nOptimal path found.")
             else:
                 print("The entered goal node is an obstacle ")
                 print("Please check README.md file for running turtlebot_astar.py file.")
