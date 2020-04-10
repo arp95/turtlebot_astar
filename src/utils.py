@@ -31,95 +31,32 @@ import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
 from heapq import heappush, heappop
 import rospy
-from tf.transformations import euler_from_quaternion
 from geometry_msgs.msg import Point, Twist, PoseStamped
 from math import pow, atan2, sqrt
-from nav_msgs.msg import Odometry
 
 
-# global variables
-x = 0.0
-y = 0.0
-angle = 0.0
-
-# callback for subscriber
-def callback(msg):
+# move robot function
+def move_robot(pub_vel, dvx, dvy, dw):
     """
     Inputs:
     
-    msg: Type Odometry. This gives us the position of the robot in the map and helps us update the position and orientation of the robot.
-    """
-    
-    global x 
-    global y
-    global angle
-    
-    x = msg.pose.pose.position.x
-    y = msg.pose.pose.position.y
-    rot_q = msg.pose.pose.orientation
-    (roll, pitch, angle) = euler_from_quaternion([rot_q.x, rot_q.y, rot_q.z, rot_q.w])
-
-    
-# function to set initial point
-def set_initial_point(robot_x, robot_y, robot_theta):
-    """
-    Inputs:
-    
-    robot_x: the x-coordinate of the robot location.
-    robot_y: the y-coordinate of the robot location.
-    robot_theta: the angle of the robot with respect to x-axis.
-    """
-    
-    global x
-    global y
-    global angle
-    
-    x = robot_x
-    y = robot_y
-    angle = robot_theta
-    
-    
-# function to go to goal point
-def go_to_point(robot_x, robot_y, pub_vel):
-    """
-    Inputs:
-    
-    robot_x: the x-coordinate of the robot location.
-    robot_y: the y-coordinate of the robot location.
     pub_vel: the ROS publisher which publishes the information to topic 'cmd_vel_mux/input/navi'
+    dvx: velocity along x-direction
+    dvy: velocity along y-direction
+    dw: angular velocity
     """
     
-    global x
-    global y
-    global angle
-    
-    r = rospy.Rate(4)
-    goal = Point()
+    r = rospy.Rate(100)
     vel_value = Twist()
-    goal.x = robot_x
-    goal.y = robot_y
-    
-    while not rospy.is_shutdown():
-        inc_x = goal.x - x
-        inc_y = goal.y - y
-        angle_to_goal = atan2(inc_y, inc_x)
- 
-        if abs(angle_to_goal - angle) > 0.1:
-            vel_value.linear.x = 0
-            vel_value.angular.z = 0.5
-        else:
-            vel_value.linear.x = 0.25
-            vel_value.angular.z = 0
-     
-        if(inc_x < 0.01 and inc_y < 0.01):
-            vel_value.linear.x = 0
-            vel_value.angular.z = 0
-            pub_vel.publish(vel_value)
-            break
+    velocity = np.sqrt(dvx * dvx + dvy * dvy) / 100.0
+    endTime = rospy.Time.now() + rospy.Duration(1.05)
+    while rospy.Time.now() < endTime:
+        vel_value.linear.x = velocity
+        vel_value.angular.z = dw
         pub_vel.publish(vel_value)
         r.sleep()
 
-        
+
 # class for AStar
 class AStar(object):
     
@@ -141,6 +78,7 @@ class AStar(object):
         self.goal = goal
         
         # the map size along x and y dimensions in cms (map dimension are from -500 to 500 for both x and y direction)
+        # map size is 1000 cm x 1000 cm
         self.xLength = 500
         self.yLength = 500
         
@@ -180,6 +118,7 @@ class AStar(object):
         # frequency - the value of frequency for curved path
         self.frequency = 100
     
+
     # move is valid or not
     def IsValid(self, currX, currY):
         """
@@ -251,10 +190,10 @@ class AStar(object):
             dist8 = 0
 
         # check third square(obstacle) in the given map
-        (x1, y1) = (-125 - sqrt_of_c_and_r, 375 - sqrt_of_c_and_r)
-        (x2, y2) = (-125 - sqrt_of_c_and_r, 225 + sqrt_of_c_and_r)
-        (x3, y3) = (-275 + sqrt_of_c_and_r, 225 + sqrt_of_c_and_r)
-        (x4, y4) = (-275 + sqrt_of_c_and_r, 375 - sqrt_of_c_and_r)
+        (x1, y1) = (-125 + sqrt_of_c_and_r, 375 + sqrt_of_c_and_r)
+        (x2, y2) = (-125 + sqrt_of_c_and_r, 225 - sqrt_of_c_and_r)
+        (x3, y3) = (-275 - sqrt_of_c_and_r, 225 - sqrt_of_c_and_r)
+        (x4, y4) = (-275 - sqrt_of_c_and_r, 375 + sqrt_of_c_and_r)
         first = ((col - y1) * (x2 - x1)) - ((y2 - y1) * (row - x1))
         second = ((col - y2) * (x3 - x2)) - ((y3 - y2) * (row - x2))
         third = ((col - y3) * (x4 - x3)) - ((y4 - y3) * (row - x3))
@@ -318,7 +257,7 @@ class AStar(object):
             explored_startY.append(parentNode[1])
             explored_endX.append(exploredStates[index][0] - parentNode[0])
             explored_endY.append(exploredStates[index][1] - parentNode[1])    
-            #if(count % 500 == 0):
+            #if(count % 2000 == 0):
             #    plt.quiver(np.array((explored_startX)), np.array((explored_startY)), np.array((explored_endX)), np.array((explored_endY)), units = 'xy', scale = 1, color = 'g', label = 'Explored region')
             #    plt.savefig("output/phase3/sample" + str(count) + ".png", dpi=1700)
             count = count + 1
@@ -330,7 +269,7 @@ class AStar(object):
                 startY.append(backtrackStates[index-1][1])
                 endX.append(backtrackStates[index][0] - backtrackStates[index-1][0])
                 endY.append(backtrackStates[index][1] - backtrackStates[index-1][1])    
-                #if(count % 2 == 0):
+                #if(count % 5 == 0):
                 #    plt.quiver(np.array((startX)), np.array((startY)), np.array((endX)), np.array((endY)), units = 'xy', scale = 1, color = 'r', label = 'Backtrack path')
                 #    plt.savefig("output/phase3/sample" + str(count) + ".png", dpi=1700)
                 count = count + 1
