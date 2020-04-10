@@ -1,6 +1,12 @@
 <launch>
     <arg name="record" default="false"/>
-    
+    <arg name="x" default="0"/>
+    <arg name="y" default="0"/>
+    <arg name="z" default="0"/>
+    <arg name="roll" default="0"/>
+    <arg name="pitch" default="0"/>
+    <arg name="yaw" default="0"/>
+ 
     <node
         pkg="turtlebot_astar"
         name="turtlebot_astar"
@@ -12,4 +18,9 @@
     <include file="$(find turtlebot_gazebo)/launch/turtlebot_world.launch">
         <arg name="world_file" value ="$(find turtlebot_astar)/world/map.world"/>
     </include>
+
+    <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find turtlebot_description)/robots/kobuki_hexagons_kinect.urdf.xacro'"/>
+    <node name="spawn_turtlebot_model" pkg="gazebo_ros" type="spawn_model"
+          args="-x $(arg x) -y $(arg y) -z $(arg z) -roll $(arg z) -pitch $(arg pitch) -yaw $(arg yaw) -unpause -urdf -param robot_description -model"/> 
 </launch>
+
