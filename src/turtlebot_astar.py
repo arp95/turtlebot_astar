@@ -27,6 +27,7 @@
 # header files
 from utils import *
 import sys
+import rospy
 
 
 # init ros node
@@ -41,13 +42,13 @@ goalX = float(input("Enter the x-coordinate for goal node(in m) : "))
 goalY = float(input("Enter the y-coordinate for goal node(in m) : "))
 firstRPM = float(input("Enter the first value of RPM : "))
 secondRPM = float(input("Enter the second value of RPM : "))
-clearance = float(input("Enter the clearance of the rigid robot(in cm) : "))
+clearance = float(input("Enter the clearance of the rigid robot(in m) : "))
 
 # take start and goal node as input
-start = (startX * 100.0, startY * 100.0, startOrientation) # (4, 3)
-goal = (goalX * 100.0, goalY * 100.0) # (-4, -3)
+start = (startX * 100.0, startY * 100.0, startOrientation)
+goal = (goalX * 100.0, goalY * 100.0)
 wheelRPM = (firstRPM, secondRPM) # (100, 50)
-astar = AStar(start, goal, wheelRPM, clearance)
+astar = AStar(start, goal, wheelRPM, clearance * 100)
 
 if(astar.IsValid(start[0], start[1])):
     if(astar.IsValid(goal[0], goal[1])):
@@ -57,7 +58,6 @@ if(astar.IsValid(start[0], start[1])):
                 explored_states = states[0]
                 backtrack_states = states[1]
                 actions = states[2]
-                #astar.animate(explored_states, backtrack_states)
 
                 # move robot in ROS from start to goal node
                 for index in range(0, len(actions)):

@@ -49,7 +49,7 @@ def move_robot(pub_vel, dvx, dvy, dw):
     r = rospy.Rate(100)
     vel_value = Twist()
     velocity = np.sqrt(dvx * dvx + dvy * dvy) / 100.0
-    endTime = rospy.Time.now() + rospy.Duration(1.05)
+    endTime = rospy.Time.now() + rospy.Duration(1)
     while rospy.Time.now() < endTime:
         vel_value.linear.x = velocity
         vel_value.angular.z = dw
@@ -86,13 +86,13 @@ class AStar(object):
         self.wheelRPM = wheelRPM
         
         # clearance variable - distance of the robot from the obstacle
-        self.clearance = min(clearance + 5, 8)
+        self.clearance = min(clearance + 10, 25)
         
         # radius variable - the radius of the robot (taken from turtlebot datasheet)
-        self.radius = 19.0
+        self.radius = 20.0
         
         # wheelDistance - the distance between wheels (taken from turtlebot datasheet)
-        self.wheelDistance = 34.4
+        self.wheelDistance = 34.0
         
         # wheelRadius - the radius of the wheels (taken from turtlebot datasheet)
         self.wheelRadius = 3.8
@@ -228,12 +228,12 @@ class AStar(object):
         explored_endX = []
         explored_endY = []
         fig, ax = plt.subplots()
-        plt.xlabel("x-coordinate")
-        plt.ylabel("y-coordinate")
+        plt.xlabel("x-coordinate(in m)")
+        plt.ylabel("y-coordinate(in m)")
         plt.grid()
         ax.set_aspect('equal')
-        plt.xlim(-self.xLength, self.xLength)
-        plt.ylim(-self.yLength, self.yLength)
+        plt.xlim(-self.xLength / 100.0, self.xLength / 100.0)
+        plt.ylim(-self.yLength / 100.0, self.yLength / 100.0)
         count = 0
         
         # obstacle space
@@ -243,8 +243,8 @@ class AStar(object):
         for index1 in range(-self.xLength, self.xLength):
             for index2 in range(-self.yLength, self.yLength):
                 if(self.IsObstacle(index1, index2)):
-                    obstacleX.append(index1)
-                    obstacleY.append(index2)     
+                    obstacleX.append(index1 / 100.0)
+                    obstacleY.append(index2 / 100.0)     
                     size.append(15)      
         obstacleX = np.array(obstacleX)
         obstacleY = np.array(obstacleY)
@@ -253,10 +253,10 @@ class AStar(object):
         # explore node space
         for index in range(1, len(exploredStates)):
             parentNode = self.path[exploredStates[index]][0]
-            explored_startX.append(parentNode[0])
-            explored_startY.append(parentNode[1])
-            explored_endX.append(exploredStates[index][0] - parentNode[0])
-            explored_endY.append(exploredStates[index][1] - parentNode[1])    
+            explored_startX.append(parentNode[0] / 100.0)
+            explored_startY.append(parentNode[1] / 100.0)
+            explored_endX.append((exploredStates[index][0] - parentNode[0]) / 100.0)
+            explored_endY.append((exploredStates[index][1] - parentNode[1]) / 100.0)    
             #if(count % 2000 == 0):
             #    plt.quiver(np.array((explored_startX)), np.array((explored_startY)), np.array((explored_endX)), np.array((explored_endY)), units = 'xy', scale = 1, color = 'g', label = 'Explored region')
             #    plt.savefig("output/phase3/sample" + str(count) + ".png", dpi=1700)
@@ -265,10 +265,10 @@ class AStar(object):
         # backtrack space
         if(len(backtrackStates) > 0):
             for index in range(1, len(backtrackStates)):
-                startX.append(backtrackStates[index-1][0])
-                startY.append(backtrackStates[index-1][1])
-                endX.append(backtrackStates[index][0] - backtrackStates[index-1][0])
-                endY.append(backtrackStates[index][1] - backtrackStates[index-1][1])    
+                startX.append(backtrackStates[index-1][0] / 100.0)
+                startY.append(backtrackStates[index-1][1] / 100.0)
+                endX.append((backtrackStates[index][0] - backtrackStates[index-1][0]) / 100.0)
+                endY.append((backtrackStates[index][1] - backtrackStates[index-1][1]) / 100.0)    
                 #if(count % 5 == 0):
                 #    plt.quiver(np.array((startX)), np.array((startY)), np.array((endX)), np.array((endY)), units = 'xy', scale = 1, color = 'r', label = 'Backtrack path')
                 #    plt.savefig("output/phase3/sample" + str(count) + ".png", dpi=1700)
@@ -277,7 +277,7 @@ class AStar(object):
         plt.quiver(np.array((explored_startX)), np.array((explored_startY)), np.array((explored_endX)), np.array((explored_endY)), units = 'xy', scale = 1, color = 'g', label = 'Explored region')
         if(len(backtrackStates) > 0):
             plt.quiver(np.array((startX)), np.array((startY)), np.array((endX)), np.array((endY)), units = 'xy', scale = 1, color = 'r', label = 'Backtrack path')
-        #plt.savefig("sample.png", dpi=1700)
+        #plt.savefig("output.png", dpi=1700)
         plt.legend()
         plt.show()
         plt.close()
