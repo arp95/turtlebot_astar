@@ -4,23 +4,28 @@
 ---
 
 
+
 ### Authors
 Arpit Aggarwal Shantam Bajpai
+
 
 
 ### Result Video
 
 This is a sample video of the application of A-Star algorithm on the Turtlebot.
 
-![Alt Text](https://gifs.com/gif/turtlebot-video-NLygjm)
+![](https://j.gifs.com/NLygjm.gif)
+
 
 
 ### Software Required
 For this project you will need to install the rospy, numpy, heapq(Priority queue for A*), matplotlib and gazebo to run the simulations.
 
 
+
 ### Simulation platforms used
 For the simulation we used the gazebo and turtlebot2 package. The world file is located in the world folder and defines the setup of the gazebo environment.
+
 
 
 ### Instructions for running the code
@@ -73,6 +78,7 @@ Enter the clearance(Basically maximum distance of the robot from the obstacle gi
 ```
 
 After entering all these values in the terminal, the A-star algorithm finds the optimum path between the entered start node and goal node. Then the "dvx, dvy, dw" values, which are the velocities in x-direction and y-direction and angular velocity along z-axis are published on the ROS Topic of the Turtlebot to move it from one point to another point.
+
 
 
 ### Results
