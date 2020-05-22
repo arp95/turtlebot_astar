@@ -1,31 +1,29 @@
-# Using A-star Algorithm on ROS Turtlebot
+# A-star Algorithm on ROS Turtlebot-2
 
 [![Packagist](https://img.shields.io/packagist/l/doctrine/orm.svg)](LICENSE.md)
 ---
-
 
 
 ### Authors
 Arpit Aggarwal Shantam Bajpai
 
 
+### Introduction to the Project
+In this project, the A-star motion planning algorithm was used on ROS Turtlebot 2 to navigate in a configuration space consisting of static obstacles.
 
-### Result Video
 
-This is a sample video of the application of A-Star algorithm on the Turtlebot.
+### Results
+This is the video of the application of A-Star algorithm on Turtlebot-2.
 
 ![](https://j.gifs.com/NLygjm.gif)
-
 
 
 ### Software Required
 For this project you will need to install the rospy, numpy, heapq(Priority queue for A*), matplotlib and gazebo to run the simulations.
 
 
-
 ### Simulation platforms used
 For the simulation we used the gazebo and turtlebot2 package. The world file is located in the world folder and defines the setup of the gazebo environment.
-
 
 
 ### Instructions for running the code
@@ -80,7 +78,6 @@ Enter the clearance(Basically maximum distance of the robot from the obstacle gi
 After entering all these values in the terminal, the A-star algorithm finds the optimum path between the entered start node and goal node. Then the "dvx, dvy, dw" values, which are the velocities in x-direction and y-direction and angular velocity along z-axis are published on the ROS Topic of the Turtlebot to move it from one point to another point.
 
 
-
-### Results
-The following is an example of A-star algorithm applied on a rigid robot (Start Node(in m)- (4, 3, 0), Goal Node(in m)- (-4, -3), Wheel RPM- (100, 50), Clearance(in m)- 0.2):
-![Screenshot](output.png)
+### Credits
+The following links were helpful for this project:
+1. https://github.com/AtsushiSakai/PythonRobotics
